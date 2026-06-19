@@ -13,6 +13,11 @@ access_nn_fund_allocation_finance,access.nn.fund.allocation.finance,model_nn_fun
 access_nn_fund_allocation_gm,access.nn.fund.allocation.gm,model_nn_fund_allocation,nn_fund_management.group_gm_approver,1,1,0,0
 access_nn_fund_allocation_md,access.nn.fund.allocation.md,model_nn_fund_allocation,nn_fund_management.group_md_approver,1,1,0,0
 access_nn_fund_allocation_admin,access.nn.fund.allocation.admin,model_nn_fund_allocation,nn_fund_management.group_fund_administrator,1,1,1,1
+access_nn_fund_requisition_user,access.nn.fund.requisition.user,model_nn_fund_requisition,nn_fund_management.group_fund_user,1,0,1,0
+access_nn_fund_requisition_finance,access.nn.fund.requisition.finance,model_nn_fund_requisition,nn_fund_management.group_finance_user,1,1,1,0
+access_nn_fund_requisition_gm,access.nn.fund.requisition.gm,model_nn_fund_requisition,nn_fund_management.group_gm_approver,1,1,0,0
+access_nn_fund_requisition_md,access.nn.fund.requisition.md,model_nn_fund_requisition,nn_fund_management.group_md_approver,1,1,0,0
+access_nn_fund_requisition_admin,access.nn.fund.requisition.admin,model_nn_fund_requisition,nn_fund_management.group_fund_administrator,1,1,1,1
 access_nn_approval_config_admin,access.nn.approval.config.admin,model_nn_approval_config,nn_fund_management.group_fund_administrator,1,1,1,1
 access_nn_approval_config_line_admin,access.nn.approval.config.line.admin,model_nn_approval_config_line,nn_fund_management.group_fund_administrator,1,1,1,1
 access_nn_approval_history_user,access.nn.approval.history.user,model_nn_approval_history,nn_fund_management.group_fund_user,1,0,0,0

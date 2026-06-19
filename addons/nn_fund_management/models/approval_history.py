@@ -36,6 +36,7 @@ class ApprovalHistory(models.Model):
             ("approved", "Approved"),
             ("rejected", "Rejected"),
             ("cancelled", "Cancelled"),
+            ("closed", "Closed"),
         ],
         required=True,
         index=True,
@@ -52,3 +53,4 @@ class ApprovalHistory(models.Model):
     project_id = fields.Many2one(comodel_name="project.project", ondelete="set null")
     expense_head_id = fields.Many2one(comodel_name="nn.expense.head", ondelete="set null")
     allocation_id = fields.Many2one(comodel_name="nn.fund.allocation", ondelete="cascade")
+    requisition_id = fields.Many2one(comodel_name="nn.fund.requisition", ondelete="cascade")

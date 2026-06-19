@@ -76,17 +76,34 @@ class ProjectProject(models.Model):
         inverse_name="project_id",
         string="Fund Allocations",
     )
+    requisition_ids = fields.One2many(
+        comodel_name="nn.fund.requisition",
+        inverse_name="project_id",
+        string="Fund Requisitions",
+    )
 
-    @api.depends("allocation_ids.amount", "allocation_ids.state")
+    @api.depends(
+        "allocation_ids.amount",
+        "allocation_ids.state",
+        "requisition_ids.amount",
+        "requisition_ids.state",
+        "requisition_ids.remaining_billable_amount",
+    )
     def _compute_fund_balance_fields(self):
         for project in self:
             approved_allocations = project.allocation_ids.filtered(lambda allocation: allocation.state == "approved")
+            requisition_holds = project.requisition_ids.filtered(
+                lambda requisition: requisition.state in ("submitted", "gm_approval", "finance_approval", "md_approval")
+            )
+            approved_requisitions = project.requisition_ids.filtered(lambda requisition: requisition.state == "approved")
             total_allocated = sum(approved_allocations.mapped("amount"))
+            requisition_hold = sum(requisition_holds.mapped("amount"))
+            approved_unspent = sum(approved_requisitions.mapped("remaining_billable_amount"))
             project.total_allocated_fund = total_allocated
-            project.available_fund = total_allocated
-            project.requisition_hold = 0.0
+            project.requisition_hold = requisition_hold
             project.transfer_hold = 0.0
-            project.approved_unspent_amount = 0.0
+            project.approved_unspent_amount = approved_unspent
             project.total_spent_amount = 0.0
             project.incoming_transfer_amount = 0.0
             project.outgoing_transfer_amount = 0.0
+            project.available_fund = total_allocated - requisition_hold - project.transfer_hold - approved_unspent

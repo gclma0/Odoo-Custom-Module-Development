@@ -33,6 +33,11 @@ class ExpenseHead(models.Model):
         inverse_name="expense_head_id",
         string="Fund Allocations",
     )
+    requisition_ids = fields.One2many(
+        comodel_name="nn.fund.requisition",
+        inverse_name="expense_head_id",
+        string="Fund Requisitions",
+    )
     total_allocated_fund = fields.Monetary(
         currency_field="currency_id",
         compute="_compute_fund_balance_fields",
@@ -98,16 +103,28 @@ class ExpenseHead(models.Model):
         ),
     ]
 
-    @api.depends("allocation_ids.amount", "allocation_ids.state")
+    @api.depends(
+        "allocation_ids.amount",
+        "allocation_ids.state",
+        "requisition_ids.amount",
+        "requisition_ids.state",
+        "requisition_ids.remaining_billable_amount",
+    )
     def _compute_fund_balance_fields(self):
         for expense_head in self:
             approved_allocations = expense_head.allocation_ids.filtered(lambda allocation: allocation.state == "approved")
+            requisition_holds = expense_head.requisition_ids.filtered(
+                lambda requisition: requisition.state in ("submitted", "gm_approval", "finance_approval", "md_approval")
+            )
+            approved_requisitions = expense_head.requisition_ids.filtered(lambda requisition: requisition.state == "approved")
             total_allocated = sum(approved_allocations.mapped("amount"))
+            requisition_hold = sum(requisition_holds.mapped("amount"))
+            approved_unspent = sum(approved_requisitions.mapped("remaining_billable_amount"))
             expense_head.total_allocated_fund = total_allocated
-            expense_head.available_fund = total_allocated
-            expense_head.requisition_hold = 0.0
+            expense_head.requisition_hold = requisition_hold
             expense_head.transfer_hold = 0.0
-            expense_head.approved_unspent_amount = 0.0
+            expense_head.approved_unspent_amount = approved_unspent
             expense_head.total_spent_amount = 0.0
             expense_head.incoming_transfer_amount = 0.0
             expense_head.outgoing_transfer_amount = 0.0
+            expense_head.available_fund = total_allocated - requisition_hold - expense_head.transfer_hold - approved_unspent

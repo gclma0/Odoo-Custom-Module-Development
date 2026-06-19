@@ -18,6 +18,7 @@
         "views/expense_head_views.xml",
         "views/incoming_fund_views.xml",
         "views/fund_allocation_views.xml",
+        "views/fund_requisition_views.xml",
         "views/approval_config_views.xml",
         "views/approval_history_views.xml",
         "views/menu_views.xml",
