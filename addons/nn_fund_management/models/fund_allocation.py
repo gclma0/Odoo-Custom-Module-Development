@@ -101,9 +101,9 @@ class FundAllocation(models.Model):
     @api.constrains("project_id", "expense_head_id", "company_id")
     def _check_target_company(self):
         for record in self:
-            if record.project_id and record.project_id.company_id != record.company_id:
+            if record.project_id and record.project_id.company_id and record.project_id.company_id != record.company_id:
                 raise ValidationError("The selected project must belong to the same company as the fund account.")
-            if record.expense_head_id and record.expense_head_id.company_id != record.company_id:
+            if record.expense_head_id and record.expense_head_id.company_id and record.expense_head_id.company_id != record.company_id:
                 raise ValidationError("The selected expense head must belong to the same company as the fund account.")
 
     @api.constrains("amount")

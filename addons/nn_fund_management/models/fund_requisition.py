@@ -55,6 +55,12 @@ class FundRequisition(models.Model):
         string="Approval History",
         readonly=True,
     )
+    bill_ids = fields.One2many(
+        comodel_name="nn.fund.bill",
+        inverse_name="requisition_id",
+        string="Bills",
+        readonly=True,
+    )
     approval_comment = fields.Text(help="Optional comment used for the next approval or rejection action.")
     released_amount = fields.Monetary(default=0.0, readonly=True, tracking=True)
     spent_amount = fields.Monetary(default=0.0, readonly=True, tracking=True)
@@ -77,11 +83,14 @@ class FundRequisition(models.Model):
         for record in self:
             record.target_name = record.project_id.display_name or record.expense_head_id.display_name or False
 
-    @api.depends("amount", "spent_amount", "released_amount", "state")
+    @api.depends("amount", "released_amount", "state", "bill_ids.amount", "bill_ids.state")
     def _compute_remaining_billable_amount(self):
         for record in self:
+            posted_bills = record.bill_ids.filtered(lambda bill: bill.state == "posted")
+            spent_amount = sum(posted_bills.mapped("amount"))
+            record.spent_amount = spent_amount
             if record.state in ("approved", "closed"):
-                record.remaining_billable_amount = max(record.amount - record.spent_amount - record.released_amount, 0.0)
+                record.remaining_billable_amount = max(record.amount - spent_amount - record.released_amount, 0.0)
             else:
                 record.remaining_billable_amount = 0.0
 
@@ -101,9 +110,9 @@ class FundRequisition(models.Model):
     @api.constrains("project_id", "expense_head_id", "company_id")
     def _check_target_company(self):
         for record in self:
-            if record.project_id and record.project_id.company_id != record.company_id:
+            if record.project_id and record.project_id.company_id and record.project_id.company_id != record.company_id:
                 raise ValidationError("The selected project must belong to the same company as the requisition.")
-            if record.expense_head_id and record.expense_head_id.company_id != record.company_id:
+            if record.expense_head_id and record.expense_head_id.company_id and record.expense_head_id.company_id != record.company_id:
                 raise ValidationError("The selected expense head must belong to the same company as the requisition.")
 
     @api.constrains("amount")
@@ -260,7 +269,7 @@ class FundRequisition(models.Model):
                 raise UserError("Only approved requisitions can be closed.")
             old_state = record.state
             if record.remaining_billable_amount > 0:
-                record.released_amount += record.remaining_billable_amount
+                record.released_amount = record.released_amount + record.remaining_billable_amount
             record.write({"state": "closed"})
             record._create_history_entry("closed", "md", old_state, "closed", comment="Requisition closed and remaining amount released.")
 

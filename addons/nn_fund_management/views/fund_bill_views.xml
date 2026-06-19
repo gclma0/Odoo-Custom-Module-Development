@@ -1,3 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="view_nn_fund_bill_tree" model="ir.ui.view">
+        <field name="name">nn.fund.bill.tree</field>
+        <field name="model">nn.fund.bill</field>
+        <field name="arch" type="xml">
+            <tree string="Fund Bills">
+                <field name="bill_number" />
+                <field name="bill_date" />
+                <field name="requisition_id" />
+                <field name="project_id" optional="show" />
+                <field name="expense_head_id" optional="show" />
+                <field name="vendor_name" />
+                <field name="amount" />
+                <field name="state" widget="badge" decoration-success="state == 'posted'" decoration-danger="state == 'cancelled'" decoration-warning="state == 'draft'" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_nn_fund_bill_form" model="ir.ui.view">
+        <field name="name">nn.fund.bill.form</field>
+        <field name="model">nn.fund.bill</field>
+        <field name="arch" type="xml">
+            <form string="Fund Bill">
+                <header>
+                    <button name="action_post" type="object" string="Post" class="btn-primary" invisible="state != 'draft'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state != 'posted'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state != 'cancelled'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted,cancelled" />
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="bill_number" readonly="1" />
+                            <field name="requisition_id" readonly="state != 'draft'" />
+                            <field name="bill_date" readonly="state != 'draft'" />
+                            <field name="amount" readonly="state != 'draft'" />
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1" />
+                            <field name="currency_id" readonly="1" />
+                            <field name="vendor_name" readonly="state != 'draft'" />
+                        </group>
+                    </group>
+                    <group string="Bill Target">
+                        <field name="project_id" readonly="state != 'draft'" invisible="expense_head_id" />
+                        <field name="expense_head_id" readonly="state != 'draft'" invisible="project_id" />
+                    </group>
+                    <group string="Description and Attachment">
+                        <field name="description" readonly="state != 'draft'" placeholder="Describe the billed expense." />
+                        <field name="attachment_filename" invisible="1" />
+                        <field name="attachment" filename="attachment_filename" readonly="state != 'draft'" />
+                    </group>
+                    <group string="Posting Details" invisible="state == 'draft'">
+                        <field name="posted_by" readonly="1" />
+                        <field name="posted_date" readonly="1" />
+                        <field name="cancelled_by" readonly="1" invisible="state != 'cancelled'" />
+                        <field name="cancelled_date" readonly="1" invisible="state != 'cancelled'" />
+                    </group>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+    <record id="view_nn_fund_bill_search" model="ir.ui.view">
+        <field name="name">nn.fund.bill.search</field>
+        <field name="model">nn.fund.bill</field>
+        <field name="arch" type="xml">
+            <search string="Fund Bills">
+                <field name="bill_number" />
+                <field name="requisition_id" />
+                <field name="vendor_name" />
+                <field name="state" />
+                <filter name="filter_posted" string="Posted" domain="[('state', '=', 'posted')]" />
+                <filter name="filter_cancelled" string="Cancelled" domain="[('state', '=', 'cancelled')]" />
+                <group expand="0" string="Group By">
+                    <filter name="group_by_state" string="Status" context="{'group_by': 'state'}" />
+                    <filter name="group_by_requisition" string="Requisition" context="{'group_by': 'requisition_id'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_nn_fund_bill" model="ir.actions.act_window">
+        <field name="name">Fund Bills</field>
+        <field name="res_model">nn.fund.bill</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_nn_fund_bill_search" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first fund bill</p>
+            <p>
+                Post bills against approved requisitions. Multiple partial bills are allowed, but the total cannot exceed the requisition's remaining billable amount.
+            </p>
+        </field>
+    </record>
 </odoo>

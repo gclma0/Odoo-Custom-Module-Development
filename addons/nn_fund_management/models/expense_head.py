@@ -38,6 +38,21 @@ class ExpenseHead(models.Model):
         inverse_name="expense_head_id",
         string="Fund Requisitions",
     )
+    bill_ids = fields.One2many(
+        comodel_name="nn.fund.bill",
+        inverse_name="expense_head_id",
+        string="Fund Bills",
+    )
+    source_transfer_ids = fields.One2many(
+        comodel_name="nn.fund.transfer",
+        inverse_name="source_expense_head_id",
+        string="Outgoing Fund Transfers",
+    )
+    destination_transfer_ids = fields.One2many(
+        comodel_name="nn.fund.transfer",
+        inverse_name="destination_expense_head_id",
+        string="Incoming Fund Transfers",
+    )
     total_allocated_fund = fields.Monetary(
         currency_field="currency_id",
         compute="_compute_fund_balance_fields",
@@ -109,6 +124,12 @@ class ExpenseHead(models.Model):
         "requisition_ids.amount",
         "requisition_ids.state",
         "requisition_ids.remaining_billable_amount",
+        "bill_ids.amount",
+        "bill_ids.state",
+        "source_transfer_ids.amount",
+        "source_transfer_ids.state",
+        "destination_transfer_ids.amount",
+        "destination_transfer_ids.state",
     )
     def _compute_fund_balance_fields(self):
         for expense_head in self:
@@ -120,11 +141,30 @@ class ExpenseHead(models.Model):
             total_allocated = sum(approved_allocations.mapped("amount"))
             requisition_hold = sum(requisition_holds.mapped("amount"))
             approved_unspent = sum(approved_requisitions.mapped("remaining_billable_amount"))
+            posted_bills = expense_head.bill_ids.filtered(lambda bill: bill.state == "posted")
+            total_spent = sum(posted_bills.mapped("amount"))
+            pending_source_transfers = expense_head.source_transfer_ids.filtered(
+                lambda transfer: transfer.state in ("submitted", "gm_approval", "finance_approval", "md_approval")
+            )
+            approved_source_transfers = expense_head.source_transfer_ids.filtered(lambda transfer: transfer.state == "approved")
+            approved_destination_transfers = expense_head.destination_transfer_ids.filtered(
+                lambda transfer: transfer.state == "approved"
+            )
+            transfer_hold = sum(pending_source_transfers.mapped("amount"))
+            outgoing_transfer_amount = sum(approved_source_transfers.mapped("amount"))
+            incoming_transfer_amount = sum(approved_destination_transfers.mapped("amount"))
             expense_head.total_allocated_fund = total_allocated
             expense_head.requisition_hold = requisition_hold
-            expense_head.transfer_hold = 0.0
+            expense_head.transfer_hold = transfer_hold
             expense_head.approved_unspent_amount = approved_unspent
-            expense_head.total_spent_amount = 0.0
-            expense_head.incoming_transfer_amount = 0.0
-            expense_head.outgoing_transfer_amount = 0.0
-            expense_head.available_fund = total_allocated - requisition_hold - expense_head.transfer_hold - approved_unspent
+            expense_head.total_spent_amount = total_spent
+            expense_head.incoming_transfer_amount = incoming_transfer_amount
+            expense_head.outgoing_transfer_amount = outgoing_transfer_amount
+            expense_head.available_fund = (
+                total_allocated
+                + incoming_transfer_amount
+                - outgoing_transfer_amount
+                - requisition_hold
+                - transfer_hold
+                - approved_unspent
+            )
