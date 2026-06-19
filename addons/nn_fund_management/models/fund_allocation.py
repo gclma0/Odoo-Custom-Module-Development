@@ -9,7 +9,7 @@ class FundAllocation(models.Model):
 
     _name = "nn.fund.allocation"
     _description = "Fund Allocation"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "nn.fund.company.access.mixin"]
     _order = "request_date desc, id desc"
     _rec_name = "request_number"
 
@@ -188,6 +188,7 @@ class FundAllocation(models.Model):
         return config
 
     def action_submit(self):
+        self._check_company_access()
         for record in self:
             if record.state != "draft":
                 raise UserError("Only draft allocations can be submitted.")
@@ -208,6 +209,7 @@ class FundAllocation(models.Model):
             record._create_history_entry("submitted", first_line.approval_level, old_state, new_state)
 
     def action_approve(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("submitted", "gm_approval", "finance_approval", "md_approval"):
                 raise UserError("Only allocations pending approval can be approved.")
@@ -225,6 +227,7 @@ class FundAllocation(models.Model):
             record._create_history_entry("approved", current_line.approval_level, old_state, new_state)
 
     def action_reject(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("submitted", "gm_approval", "finance_approval", "md_approval"):
                 raise UserError("Only allocations pending approval can be rejected.")
@@ -235,6 +238,7 @@ class FundAllocation(models.Model):
             record._create_history_entry("rejected", approval_level, old_state, "rejected")
 
     def action_cancel(self):
+        self._check_company_access()
         for record in self:
             if record.state == "approved":
                 raise UserError("Approved allocations cannot be cancelled directly.")
@@ -248,6 +252,7 @@ class FundAllocation(models.Model):
             record._create_history_entry("cancelled", approval_level, old_state, "cancelled")
 
     def action_reset_to_draft(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("rejected", "cancelled"):
                 raise UserError("Only rejected or cancelled allocations can be reset to draft.")

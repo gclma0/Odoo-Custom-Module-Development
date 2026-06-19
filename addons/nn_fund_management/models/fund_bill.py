@@ -9,7 +9,7 @@ class FundBill(models.Model):
 
     _name = "nn.fund.bill"
     _description = "Fund Bill"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "nn.fund.company.access.mixin"]
     _order = "bill_date desc, id desc"
     _rec_name = "bill_number"
 
@@ -100,6 +100,8 @@ class FundBill(models.Model):
         if not (self.env.user.has_group(finance_group) or self.env.user.has_group(admin_group)):
             raise UserError("Only authorized finance users can post fund bills.")
 
+        self._check_company_access()
+
         for record in self:
             if record.state != "draft":
                 raise UserError("Only draft bills can be posted.")
@@ -118,6 +120,8 @@ class FundBill(models.Model):
         if not (self.env.user.has_group(finance_group) or self.env.user.has_group(admin_group)):
             raise UserError("Only authorized finance users can cancel fund bills.")
 
+        self._check_company_access()
+
         for record in self:
             if record.state != "posted":
                 raise UserError("Only posted bills can be cancelled.")
@@ -130,6 +134,7 @@ class FundBill(models.Model):
             )
 
     def action_reset_to_draft(self):
+        self._check_company_access()
         for record in self:
             if record.state != "cancelled":
                 raise UserError("Only cancelled bills can be reset to draft.")

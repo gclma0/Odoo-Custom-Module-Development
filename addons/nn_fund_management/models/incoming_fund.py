@@ -9,7 +9,7 @@ class IncomingFund(models.Model):
 
     _name = "nn.incoming.fund"
     _description = "Incoming Fund"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "nn.fund.company.access.mixin"]
     _order = "date desc, id desc"
     _rec_name = "transaction_reference"
 
@@ -71,6 +71,8 @@ class IncomingFund(models.Model):
         if not (self.env.user.has_group(finance_group) or self.env.user.has_group(admin_group)):
             raise UserError("Only authorized finance users can confirm incoming funds.")
 
+        self._check_company_access()
+
         for record in self:
             if record.state != "draft":
                 raise UserError("Only draft incoming funds can be confirmed.")
@@ -84,12 +86,14 @@ class IncomingFund(models.Model):
         )
 
     def action_cancel(self):
+        self._check_company_access()
         for record in self:
             if record.state != "draft":
                 raise UserError("Only draft incoming funds can be cancelled.")
         self.write({"state": "cancelled"})
 
     def action_reset_to_draft(self):
+        self._check_company_access()
         for record in self:
             if record.state != "cancelled":
                 raise UserError("Only cancelled incoming funds can be reset to draft.")

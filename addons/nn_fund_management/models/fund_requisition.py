@@ -9,7 +9,7 @@ class FundRequisition(models.Model):
 
     _name = "nn.fund.requisition"
     _description = "Fund Requisition"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "nn.fund.company.access.mixin"]
     _order = "request_date desc, id desc"
     _rec_name = "requisition_number"
 
@@ -207,6 +207,7 @@ class FundRequisition(models.Model):
         return config
 
     def action_submit(self):
+        self._check_company_access()
         for record in self:
             if record.state != "draft":
                 raise UserError("Only draft requisitions can be submitted.")
@@ -225,6 +226,7 @@ class FundRequisition(models.Model):
             record._create_history_entry("submitted", first_line.approval_level, old_state, "submitted")
 
     def action_approve(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("submitted", "gm_approval", "finance_approval", "md_approval"):
                 raise UserError("Only requisitions pending approval can be approved.")
@@ -241,6 +243,7 @@ class FundRequisition(models.Model):
             record._create_history_entry("approved", current_line.approval_level, old_state, new_state)
 
     def action_reject(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("submitted", "gm_approval", "finance_approval", "md_approval"):
                 raise UserError("Only requisitions pending approval can be rejected.")
@@ -251,6 +254,7 @@ class FundRequisition(models.Model):
             record._create_history_entry("rejected", approval_level, old_state, "rejected")
 
     def action_cancel(self):
+        self._check_company_access()
         for record in self:
             if record.state in ("approved", "closed"):
                 raise UserError("Approved or closed requisitions cannot be cancelled directly.")
@@ -264,6 +268,7 @@ class FundRequisition(models.Model):
             record._create_history_entry("cancelled", approval_level, old_state, "cancelled")
 
     def action_close(self):
+        self._check_company_access()
         for record in self:
             if record.state != "approved":
                 raise UserError("Only approved requisitions can be closed.")
@@ -274,6 +279,7 @@ class FundRequisition(models.Model):
             record._create_history_entry("closed", "md", old_state, "closed", comment="Requisition closed and remaining amount released.")
 
     def action_reset_to_draft(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("rejected", "cancelled"):
                 raise UserError("Only rejected or cancelled requisitions can be reset to draft.")

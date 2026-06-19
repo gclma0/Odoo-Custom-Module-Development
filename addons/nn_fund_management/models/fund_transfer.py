@@ -9,7 +9,7 @@ class FundTransfer(models.Model):
 
     _name = "nn.fund.transfer"
     _description = "Fund Transfer"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "nn.fund.company.access.mixin"]
     _order = "request_date desc, id desc"
     _rec_name = "transfer_number"
 
@@ -220,6 +220,7 @@ class FundTransfer(models.Model):
         return config
 
     def action_submit(self):
+        self._check_company_access()
         for record in self:
             if record.state != "draft":
                 raise UserError("Only draft transfers can be submitted.")
@@ -238,6 +239,7 @@ class FundTransfer(models.Model):
             record._create_history_entry("submitted", first_line.approval_level, old_state, "submitted")
 
     def action_approve(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("submitted", "gm_approval", "finance_approval", "md_approval"):
                 raise UserError("Only transfers pending approval can be approved.")
@@ -254,6 +256,7 @@ class FundTransfer(models.Model):
             record._create_history_entry("approved", current_line.approval_level, old_state, new_state)
 
     def action_reject(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("submitted", "gm_approval", "finance_approval", "md_approval"):
                 raise UserError("Only transfers pending approval can be rejected.")
@@ -264,6 +267,7 @@ class FundTransfer(models.Model):
             record._create_history_entry("rejected", approval_level, old_state, "rejected")
 
     def action_cancel(self):
+        self._check_company_access()
         for record in self:
             if record.state == "approved":
                 raise UserError("Approved transfers cannot be cancelled directly.")
@@ -277,6 +281,7 @@ class FundTransfer(models.Model):
             record._create_history_entry("cancelled", approval_level, old_state, "cancelled")
 
     def action_reset_to_draft(self):
+        self._check_company_access()
         for record in self:
             if record.state not in ("rejected", "cancelled"):
                 raise UserError("Only rejected or cancelled transfers can be reset to draft.")
