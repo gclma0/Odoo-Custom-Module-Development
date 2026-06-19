@@ -20,6 +20,24 @@
         name="Configuration"
         parent="menu_nn_fund_management_root"
         sequence="20"
-        groups="nn_fund_management.group_fund_administrator"
+        groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
+    />
+
+    <menuitem
+        id="menu_nn_fund_account"
+        name="Fund Accounts"
+        parent="menu_nn_fund_management_configuration"
+        action="nn_fund_management.action_nn_fund_account"
+        sequence="10"
+        groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
+    />
+
+    <menuitem
+        id="menu_nn_expense_head"
+        name="Expense Heads"
+        parent="menu_nn_fund_management_configuration"
+        action="nn_fund_management.action_nn_expense_head"
+        sequence="20"
+        groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
     />
 </odoo>

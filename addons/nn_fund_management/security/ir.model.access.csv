@@ -1,1 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_nn_fund_account_user,access.nn.fund.account.user,model_nn_fund_account,nn_fund_management.group_fund_user,1,0,0,0
+access_nn_fund_account_finance,access.nn.fund.account.finance,model_nn_fund_account,nn_fund_management.group_finance_user,1,1,1,0
+access_nn_fund_account_admin,access.nn.fund.account.admin,model_nn_fund_account,nn_fund_management.group_fund_administrator,1,1,1,1
+access_nn_expense_head_user,access.nn.expense.head.user,model_nn_expense_head,nn_fund_management.group_fund_user,1,0,0,0
+access_nn_expense_head_finance,access.nn.expense.head.finance,model_nn_expense_head,nn_fund_management.group_finance_user,1,1,1,0
+access_nn_expense_head_admin,access.nn.expense.head.admin,model_nn_expense_head,nn_fund_management.group_fund_administrator,1,1,1,1

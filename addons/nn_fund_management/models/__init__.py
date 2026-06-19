@@ -9,3 +9,4 @@ from . import fund_bill
 from . import fund_requisition
 from . import fund_transfer
 from . import incoming_fund
+from . import project_project
