@@ -9,6 +9,12 @@
     "application": True,
     "installable": True,
     "depends": ["base", "mail", "project"],
-    "data": [],
+    "data": [
+        "security/groups.xml",
+        "security/ir.model.access.csv",
+        "security/record_rules.xml",
+        "views/menu_views.xml",
+        "data/sequence_data.xml",
+    ],
     "demo": [],
 }

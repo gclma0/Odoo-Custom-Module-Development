@@ -1,3 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <menuitem
+        id="menu_nn_fund_management_root"
+        name="Fund Management"
+        sequence="10"
+        groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator"
+    />
+
+    <menuitem
+        id="menu_nn_fund_management_operations"
+        name="Operations"
+        parent="menu_nn_fund_management_root"
+        sequence="10"
+        groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator"
+    />
+
+    <menuitem
+        id="menu_nn_fund_management_configuration"
+        name="Configuration"
+        parent="menu_nn_fund_management_root"
+        sequence="20"
+        groups="nn_fund_management.group_fund_administrator"
+    />
 </odoo>
