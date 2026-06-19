@@ -5,3 +5,6 @@ access_nn_fund_account_admin,access.nn.fund.account.admin,model_nn_fund_account,
 access_nn_expense_head_user,access.nn.expense.head.user,model_nn_expense_head,nn_fund_management.group_fund_user,1,0,0,0
 access_nn_expense_head_finance,access.nn.expense.head.finance,model_nn_expense_head,nn_fund_management.group_finance_user,1,1,1,0
 access_nn_expense_head_admin,access.nn.expense.head.admin,model_nn_expense_head,nn_fund_management.group_fund_administrator,1,1,1,1
+access_nn_incoming_fund_user,access.nn.incoming.fund.user,model_nn_incoming_fund,nn_fund_management.group_fund_user,1,0,0,0
+access_nn_incoming_fund_finance,access.nn.incoming.fund.finance,model_nn_incoming_fund,nn_fund_management.group_finance_user,1,1,1,0
+access_nn_incoming_fund_admin,access.nn.incoming.fund.admin,model_nn_incoming_fund,nn_fund_management.group_fund_administrator,1,1,1,1

@@ -16,6 +16,7 @@
         "views/project_views.xml",
         "views/fund_account_views.xml",
         "views/expense_head_views.xml",
+        "views/incoming_fund_views.xml",
         "views/menu_views.xml",
         "data/sequence_data.xml",
     ],

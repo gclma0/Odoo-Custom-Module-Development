@@ -40,4 +40,13 @@
         sequence="20"
         groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
     />
+
+    <menuitem
+        id="menu_nn_incoming_fund"
+        name="Incoming Funds"
+        parent="menu_nn_fund_management_operations"
+        action="nn_fund_management.action_nn_incoming_fund"
+        sequence="10"
+        groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
+    />
 </odoo>
