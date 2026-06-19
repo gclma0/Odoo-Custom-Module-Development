@@ -41,6 +41,11 @@ class FundAccount(models.Model):
         inverse_name="fund_account_id",
         string="Incoming Funds",
     )
+    allocation_ids = fields.One2many(
+        comodel_name="nn.fund.allocation",
+        inverse_name="fund_account_id",
+        string="Fund Allocations",
+    )
     active = fields.Boolean(default=True)
     description = fields.Text()
     total_received = fields.Monetary(
@@ -80,12 +85,23 @@ class FundAccount(models.Model):
         ),
     ]
 
-    @api.depends("incoming_fund_ids.amount", "incoming_fund_ids.state")
+    @api.depends(
+        "incoming_fund_ids.amount",
+        "incoming_fund_ids.state",
+        "allocation_ids.amount",
+        "allocation_ids.state",
+    )
     def _compute_balance_fields(self):
         for account in self:
             confirmed_incoming = account.incoming_fund_ids.filtered(lambda fund: fund.state == "confirmed")
+            pending_allocations = account.allocation_ids.filtered(
+                lambda allocation: allocation.state in ("submitted", "gm_approval", "finance_approval", "md_approval")
+            )
+            approved_allocations = account.allocation_ids.filtered(lambda allocation: allocation.state == "approved")
             total_received = sum(confirmed_incoming.mapped("amount"))
+            amount_on_hold = sum(pending_allocations.mapped("amount"))
+            total_assigned_amount = sum(approved_allocations.mapped("amount"))
             account.total_received = total_received
-            account.available_unassigned_balance = total_received
-            account.amount_on_hold = 0.0
-            account.total_assigned_amount = 0.0
+            account.available_unassigned_balance = total_received - amount_on_hold - total_assigned_amount
+            account.amount_on_hold = amount_on_hold
+            account.total_assigned_amount = total_assigned_amount

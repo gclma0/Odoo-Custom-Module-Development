@@ -51,3 +51,4 @@ class ApprovalHistory(models.Model):
     fund_account_id = fields.Many2one(comodel_name="nn.fund.account", ondelete="set null")
     project_id = fields.Many2one(comodel_name="project.project", ondelete="set null")
     expense_head_id = fields.Many2one(comodel_name="nn.expense.head", ondelete="set null")
+    allocation_id = fields.Many2one(comodel_name="nn.fund.allocation", ondelete="cascade")

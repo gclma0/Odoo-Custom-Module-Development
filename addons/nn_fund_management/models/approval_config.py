@@ -62,6 +62,23 @@ class ApprovalConfig(models.Model):
             if record.max_amount and record.max_amount < record.min_amount:
                 raise ValidationError("Maximum amount must be greater than or equal to minimum amount.")
 
+    def get_matching_config(self, request_type, company, amount):
+        """Return the best matching active approval configuration."""
+
+        return self.search(
+            [
+                ("request_type", "=", request_type),
+                ("company_id", "=", company.id),
+                ("active", "=", True),
+                ("min_amount", "<=", amount),
+                "|",
+                ("max_amount", "=", False),
+                ("max_amount", ">=", amount),
+            ],
+            order="min_amount desc, id asc",
+            limit=1,
+        )
+
 
 class ApprovalConfigLine(models.Model):
     """Defines the ordered approval steps within a rule."""
@@ -106,3 +123,10 @@ class ApprovalConfigLine(models.Model):
             )
             if duplicates:
                 raise ValidationError("Each approval level can appear only once per configuration.")
+
+    @api.constrains("config_id", "sequence", "approval_level")
+    def _check_gm_before_md(self):
+        for line in self:
+            levels = {item.approval_level: item.sequence for item in line.config_id.line_ids}
+            if "gm" in levels and "md" in levels and levels["gm"] >= levels["md"]:
+                raise ValidationError("GM approval must be sequenced before MD approval.")
