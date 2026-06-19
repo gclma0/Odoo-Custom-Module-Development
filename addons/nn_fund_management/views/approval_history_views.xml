@@ -1,3 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="view_nn_approval_history_tree" model="ir.ui.view">
+        <field name="name">nn.approval.history.tree</field>
+        <field name="model">nn.approval.history</field>
+        <field name="arch" type="xml">
+            <tree string="Approval History" create="0" edit="0" delete="0">
+                <field name="action_date" />
+                <field name="request_type" />
+                <field name="reference" />
+                <field name="approval_level" />
+                <field name="decision" widget="badge" decoration-success="decision == 'approved'" decoration-warning="decision == 'submitted'" decoration-danger="decision in ('rejected', 'cancelled')" />
+                <field name="action_by" />
+                <field name="amount" />
+                <field name="company_id" groups="base.group_multi_company" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_nn_approval_history_form" model="ir.ui.view">
+        <field name="name">nn.approval.history.form</field>
+        <field name="model">nn.approval.history</field>
+        <field name="arch" type="xml">
+            <form string="Approval History" create="0" edit="0" delete="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="request_type" />
+                            <field name="reference" />
+                            <field name="approval_level" />
+                            <field name="decision" />
+                        </group>
+                        <group>
+                            <field name="action_by" />
+                            <field name="action_date" />
+                            <field name="company_id" groups="base.group_multi_company" />
+                            <field name="amount" />
+                        </group>
+                    </group>
+                    <group string="State Change">
+                        <field name="old_state" />
+                        <field name="new_state" />
+                    </group>
+                    <group string="Related Records">
+                        <field name="res_model" />
+                        <field name="res_id" />
+                        <field name="fund_account_id" />
+                        <field name="project_id" />
+                        <field name="expense_head_id" />
+                    </group>
+                    <group string="Comment">
+                        <field name="comment" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_nn_approval_history_search" model="ir.ui.view">
+        <field name="name">nn.approval.history.search</field>
+        <field name="model">nn.approval.history</field>
+        <field name="arch" type="xml">
+            <search string="Approval History">
+                <field name="reference" />
+                <field name="request_type" />
+                <field name="approval_level" />
+                <field name="decision" />
+                <field name="action_by" />
+                <field name="company_id" groups="base.group_multi_company" />
+                <filter name="filter_approved" string="Approved" domain="[('decision', '=', 'approved')]" />
+                <filter name="filter_rejected" string="Rejected" domain="[('decision', '=', 'rejected')]" />
+                <group expand="0" string="Group By">
+                    <filter name="group_by_request_type" string="Request Type" context="{'group_by': 'request_type'}" />
+                    <filter name="group_by_decision" string="Decision" context="{'group_by': 'decision'}" />
+                    <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}" groups="base.group_multi_company" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_nn_approval_history" model="ir.actions.act_window">
+        <field name="name">Approval History</field>
+        <field name="res_model">nn.approval.history</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_nn_approval_history_search" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Approval actions will appear here</p>
+            <p>
+                This screen will provide an auditable history of submissions, approvals, rejections, and cancellations.
+            </p>
+        </field>
+    </record>
 </odoo>

@@ -8,3 +8,10 @@ access_nn_expense_head_admin,access.nn.expense.head.admin,model_nn_expense_head,
 access_nn_incoming_fund_user,access.nn.incoming.fund.user,model_nn_incoming_fund,nn_fund_management.group_fund_user,1,0,0,0
 access_nn_incoming_fund_finance,access.nn.incoming.fund.finance,model_nn_incoming_fund,nn_fund_management.group_finance_user,1,1,1,0
 access_nn_incoming_fund_admin,access.nn.incoming.fund.admin,model_nn_incoming_fund,nn_fund_management.group_fund_administrator,1,1,1,1
+access_nn_approval_config_admin,access.nn.approval.config.admin,model_nn_approval_config,nn_fund_management.group_fund_administrator,1,1,1,1
+access_nn_approval_config_line_admin,access.nn.approval.config.line.admin,model_nn_approval_config_line,nn_fund_management.group_fund_administrator,1,1,1,1
+access_nn_approval_history_user,access.nn.approval.history.user,model_nn_approval_history,nn_fund_management.group_fund_user,1,0,0,0
+access_nn_approval_history_finance,access.nn.approval.history.finance,model_nn_approval_history,nn_fund_management.group_finance_user,1,0,0,0
+access_nn_approval_history_gm,access.nn.approval.history.gm,model_nn_approval_history,nn_fund_management.group_gm_approver,1,0,0,0
+access_nn_approval_history_md,access.nn.approval.history.md,model_nn_approval_history,nn_fund_management.group_md_approver,1,0,0,0
+access_nn_approval_history_admin,access.nn.approval.history.admin,model_nn_approval_history,nn_fund_management.group_fund_administrator,1,1,1,1
