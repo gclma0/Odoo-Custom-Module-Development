@@ -142,6 +142,12 @@ class FundBill(models.Model):
                 }
             )
             record._create_audit_entry("posted", old_state, "posted")
+            if record.requisition_id.amount and record.requisition_id.remaining_billable_amount <= (record.requisition_id.amount * 0.1):
+                record.requisition_id.activity_schedule(
+                    activity_type_id=self.env.ref("mail.mail_activity_data_todo").id,
+                    user_id=record.requisition_id.requested_by.id,
+                    note="This requisition is almost fully used.",
+                )
 
     def action_cancel(self):
         finance_group = "nn_fund_management.group_finance_user"

@@ -211,6 +211,19 @@ class FundTransfer(models.Model):
             }
         )
 
+    def _schedule_activity_for_line(self, line, note):
+        self.ensure_one()
+        activity_type = self.env.ref("mail.mail_activity_data_todo")
+        line_sudo = line.sudo()
+        users = line_sudo.approver_user_id or line_sudo.approver_group_id.users
+        for user in users:
+            self.activity_schedule(activity_type_id=activity_type.id, user_id=user.id, note=note)
+
+    def _schedule_requester_activity(self, note):
+        self.ensure_one()
+        activity_type = self.env.ref("mail.mail_activity_data_todo")
+        self.activity_schedule(activity_type_id=activity_type.id, user_id=self.requested_by.id, note=note)
+
     def _get_matching_config(self):
         self.ensure_one()
         config = self.env["nn.approval.config"].get_matching_config("transfer", self.company_id, self.amount)
@@ -243,6 +256,7 @@ class FundTransfer(models.Model):
                 }
             )
             record._create_history_entry("submitted", first_line.approval_level, old_state, new_state)
+            record._schedule_activity_for_line(first_line, "Fund transfer submitted and waiting for your approval.")
 
     def action_approve(self):
         self._check_company_access()
@@ -256,9 +270,11 @@ class FundTransfer(models.Model):
             if next_line:
                 new_state = record._map_state_from_line(next_line)
                 record.write({"current_approval_line_id": next_line.id, "state": new_state})
+                record._schedule_activity_for_line(next_line, "Fund transfer moved to your approval step.")
             else:
                 new_state = "approved"
                 record.write({"current_approval_line_id": False, "state": new_state})
+                record._schedule_requester_activity("Your fund transfer has been approved.")
             record._create_history_entry("approved", current_line.approval_level, old_state, new_state)
 
     def action_reject(self):
@@ -271,6 +287,7 @@ class FundTransfer(models.Model):
             approval_level = record.sudo().current_approval_line_id.approval_level
             record.write({"state": "rejected", "current_approval_line_id": False})
             record._create_history_entry("rejected", approval_level, old_state, "rejected")
+            record._schedule_requester_activity("Your fund transfer has been rejected.")
 
     def action_cancel(self):
         self._check_company_access()

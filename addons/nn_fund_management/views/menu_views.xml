@@ -8,6 +8,15 @@
     />
 
     <menuitem
+        id="menu_nn_fund_dashboard"
+        name="Dashboard"
+        parent="menu_nn_fund_management_root"
+        action="nn_fund_management.action_nn_fund_dashboard"
+        sequence="5"
+        groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator"
+    />
+
+    <menuitem
         id="menu_nn_fund_management_operations"
         name="Operations"
         parent="menu_nn_fund_management_root"

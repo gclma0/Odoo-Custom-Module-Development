@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nn_fund_dashboard_wizard_form" model="ir.ui.view">
+        <field name="name">nn.fund.dashboard.wizard.form</field>
+        <field name="model">nn.fund.dashboard.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Fund Dashboard" create="0" edit="0" delete="0">
+                <sheet>
+                    <group string="Summary" col="4">
+                        <field name="total_funds_received" readonly="1" />
+                        <field name="unassigned_balance" readonly="1" />
+                        <field name="held_amount" readonly="1" />
+                        <field name="assigned_amount" readonly="1" />
+                        <field name="spent_amount" readonly="1" />
+                        <field name="pending_approvals" readonly="1" />
+                    </group>
+                    <notebook>
+                        <page string="Project Balances">
+                            <field name="project_balance_html" readonly="1" nolabel="1" widget="html" />
+                        </page>
+                        <page string="Expense Head Balances">
+                            <field name="expense_head_balance_html" readonly="1" nolabel="1" widget="html" />
+                        </page>
+                        <page string="Recent Movements">
+                            <field name="recent_movements_html" readonly="1" nolabel="1" widget="html" />
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button string="Refresh" type="object" name="action_open_dashboard" class="btn-primary" />
+                    <button string="Close" class="btn-secondary" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_nn_fund_dashboard" model="ir.actions.server">
+        <field name="name">Fund Dashboard</field>
+        <field name="model_id" ref="model_nn_fund_dashboard_wizard" />
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_dashboard()</field>
+    </record>
+</odoo>
