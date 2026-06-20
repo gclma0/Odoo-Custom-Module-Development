@@ -11,7 +11,7 @@
                 <field name="sender_source" />
                 <field name="amount" />
                 <field name="company_id" groups="base.group_multi_company" />
-                <field name="state" widget="badge" decoration-success="state == 'confirmed'" decoration-warning="state == 'draft'" decoration-danger="state == 'cancelled'" />
+                <field name="state" widget="badge" decoration-success="state == 'confirmed'" decoration-warning="state == 'draft'" decoration-danger="state in ('cancelled', 'reversed')" />
             </tree>
         </field>
     </record>
@@ -24,8 +24,9 @@
                 <header>
                     <button name="action_confirm" type="object" string="Confirm" class="btn-primary" invisible="state != 'draft'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
                     <button name="action_cancel" type="object" string="Cancel" invisible="state != 'draft'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
+                    <button name="action_reverse" type="object" string="Reverse" invisible="state != 'confirmed'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
                     <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state != 'cancelled'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,cancelled" />
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,cancelled,reversed" />
                 </header>
                 <sheet>
                     <group>
@@ -49,6 +50,9 @@
                     <group string="Confirmation Details" invisible="state == 'draft'">
                         <field name="confirmed_by" readonly="1" />
                         <field name="confirmed_date" readonly="1" />
+                        <field name="reversed_by" readonly="1" invisible="state != 'reversed'" />
+                        <field name="reversed_date" readonly="1" invisible="state != 'reversed'" />
+                        <field name="reversal_reason" invisible="state != 'reversed'" />
                     </group>
                 </sheet>
                 <chatter />
@@ -69,6 +73,7 @@
                 <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]" />
                 <filter name="filter_confirmed" string="Confirmed" domain="[('state', '=', 'confirmed')]" />
                 <filter name="filter_cancelled" string="Cancelled" domain="[('state', '=', 'cancelled')]" />
+                <filter name="filter_reversed" string="Reversed" domain="[('state', '=', 'reversed')]" />
                 <group expand="0" string="Group By">
                     <filter name="group_by_account" string="Fund Account" context="{'group_by': 'fund_account_id'}" />
                     <filter name="group_by_state" string="Status" context="{'group_by': 'state'}" />

@@ -12,7 +12,7 @@
                 <field name="expense_head_id" optional="show" />
                 <field name="requested_by" />
                 <field name="amount" />
-                <field name="state" widget="badge" decoration-warning="state in ('gm_approval', 'finance_approval', 'md_approval')" decoration-success="state == 'approved'" decoration-danger="state in ('rejected', 'cancelled')" />
+                <field name="state" widget="badge" decoration-warning="state in ('submitted', 'gm_approval', 'finance_approval', 'md_approval')" decoration-success="state == 'approved'" decoration-danger="state in ('rejected', 'cancelled', 'reversed')" />
             </tree>
         </field>
     </record>
@@ -26,9 +26,10 @@
                     <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'" />
                     <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state not in ('submitted', 'gm_approval', 'finance_approval', 'md_approval')" groups="nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator" />
                     <button name="action_reject" type="object" string="Reject" invisible="state not in ('submitted', 'gm_approval', 'finance_approval', 'md_approval')" groups="nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator" />
+                    <button name="action_reverse" type="object" string="Reverse" invisible="state != 'approved'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
                     <button name="action_cancel" type="object" string="Cancel" invisible="state in ('approved', 'cancelled')" />
                     <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state not in ('rejected', 'cancelled')" />
-                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,gm_approval,finance_approval,md_approval,approved,rejected,cancelled" />
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,gm_approval,finance_approval,md_approval,approved,rejected,cancelled,reversed" />
                 </header>
                 <sheet>
                     <group>
@@ -90,9 +91,10 @@
                 <field name="expense_head_id" />
                 <field name="requested_by" />
                 <field name="state" />
-                <filter name="filter_pending" string="Pending Approval" domain="[('state', 'in', ('gm_approval', 'finance_approval', 'md_approval'))]" />
+                <filter name="filter_pending" string="Pending Approval" domain="[('state', 'in', ('submitted', 'gm_approval', 'finance_approval', 'md_approval'))]" />
                 <filter name="filter_approved" string="Approved" domain="[('state', '=', 'approved')]" />
                 <filter name="filter_rejected" string="Rejected" domain="[('state', '=', 'rejected')]" />
+                <filter name="filter_reversed" string="Reversed" domain="[('state', '=', 'reversed')]" />
                 <group expand="0" string="Group By">
                     <filter name="group_by_account" string="Fund Account" context="{'group_by': 'fund_account_id'}" />
                     <filter name="group_by_state" string="Status" context="{'group_by': 'state'}" />

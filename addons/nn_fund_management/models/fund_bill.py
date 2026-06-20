@@ -94,6 +94,33 @@ class FundBill(models.Model):
             if record.amount > record.requisition_id.remaining_billable_amount:
                 raise UserError("The bill amount cannot exceed the requisition's remaining billable amount.")
 
+    def _create_audit_entry(self, decision, old_state, new_state):
+        self.ensure_one()
+        self.env["nn.approval.history"].create(
+            {
+                "request_type": "bill",
+                "res_model": self._name,
+                "res_id": self.id,
+                "reference": self.bill_number,
+                "reference_document": self.bill_number,
+                "approval_level": "finance",
+                "decision": decision,
+                "action_by": self.env.user.id,
+                "record_creator_id": self.create_uid.id,
+                "submitted_by_id": self.create_uid.id,
+                "comment": self.description,
+                "old_state": old_state,
+                "new_state": new_state,
+                "amount": self.amount,
+                "currency_id": self.currency_id.id,
+                "company_id": self.company_id.id,
+                "project_id": self.project_id.id,
+                "expense_head_id": self.expense_head_id.id,
+                "requisition_id": self.requisition_id.id,
+                "bill_id": self.id,
+            }
+        )
+
     def action_post(self):
         finance_group = "nn_fund_management.group_finance_user"
         admin_group = "nn_fund_management.group_fund_administrator"
@@ -106,6 +133,7 @@ class FundBill(models.Model):
             if record.state != "draft":
                 raise UserError("Only draft bills can be posted.")
             record._check_can_post()
+            old_state = record.state
             record.write(
                 {
                     "state": "posted",
@@ -113,6 +141,7 @@ class FundBill(models.Model):
                     "posted_date": fields.Datetime.now(),
                 }
             )
+            record._create_audit_entry("posted", old_state, "posted")
 
     def action_cancel(self):
         finance_group = "nn_fund_management.group_finance_user"
@@ -125,6 +154,7 @@ class FundBill(models.Model):
         for record in self:
             if record.state != "posted":
                 raise UserError("Only posted bills can be cancelled.")
+            old_state = record.state
             record.write(
                 {
                     "state": "cancelled",
@@ -132,6 +162,7 @@ class FundBill(models.Model):
                     "cancelled_date": fields.Datetime.now(),
                 }
             )
+            record._create_audit_entry("cancelled", old_state, "cancelled")
 
     def action_reset_to_draft(self):
         self._check_company_access()

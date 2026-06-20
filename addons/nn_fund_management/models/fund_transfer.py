@@ -40,6 +40,7 @@ class FundTransfer(models.Model):
             ("approved", "Approved"),
             ("rejected", "Rejected"),
             ("cancelled", "Cancelled"),
+            ("reversed", "Reversed"),
         ],
         required=True,
         default="draft",
@@ -191,9 +192,12 @@ class FundTransfer(models.Model):
                 "res_model": self._name,
                 "res_id": self.id,
                 "reference": self.transfer_number,
+                "reference_document": self.transfer_number,
                 "approval_level": approval_level,
                 "decision": decision,
                 "action_by": self.env.user.id,
+                "record_creator_id": self.create_uid.id,
+                "submitted_by_id": self.requested_by.id,
                 "comment": comment or self.approval_comment,
                 "old_state": old_state,
                 "new_state": new_state,
@@ -293,3 +297,24 @@ class FundTransfer(models.Model):
                     "approval_comment": False,
                 }
             )
+
+    def action_reverse(self):
+        finance_group = "nn_fund_management.group_finance_user"
+        admin_group = "nn_fund_management.group_fund_administrator"
+        if not (self.env.user.has_group(finance_group) or self.env.user.has_group(admin_group)):
+            raise UserError("Only authorized finance users can reverse approved transfers.")
+
+        self._check_company_access()
+        for record in self:
+            if record.state != "approved":
+                raise UserError("Only approved transfers can be reversed.")
+            destination_available = (
+                record.destination_project_id.available_fund
+                if record.destination_project_id
+                else record.destination_expense_head_id.available_fund
+            )
+            if destination_available < record.amount:
+                raise UserError("This transfer cannot be reversed because the destination no longer has enough free available balance.")
+            old_state = record.state
+            record.write({"state": "reversed"})
+            record._create_history_entry("reversed", "finance", old_state, "reversed")
