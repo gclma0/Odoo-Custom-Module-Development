@@ -87,6 +87,15 @@ class BankEmailImport(models.Model):
             "received_amount": received_amount,
         }
 
+    def _schedule_failure_activity(self, note):
+        self.ensure_one()
+        activity_type = self.env.ref("mail.mail_activity_data_todo")
+        users = self.env.ref("nn_fund_management.group_fund_administrator").sudo().users
+        if not users:
+            users = self.env.ref("nn_fund_management.group_finance_user").sudo().users
+        for user in users:
+            self.activity_schedule(activity_type_id=activity_type.id, user_id=user.id, note=note)
+
     def action_process_email(self):
         self._check_company_access()
         for record in self:
@@ -110,3 +119,4 @@ class BankEmailImport(models.Model):
                 record.write({**parsed, "state": "processed", "failure_reason": False, "incoming_fund_id": incoming_fund.id})
             except Exception as exc:
                 record.write({"state": "failed", "failure_reason": str(exc)})
+                record._schedule_failure_activity("Bank email processing failed. Review the failure reason and verify the email content.")

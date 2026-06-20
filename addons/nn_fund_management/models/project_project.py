@@ -8,6 +8,11 @@ class ProjectProject(models.Model):
 
     _inherit = "project.project"
 
+    fund_category = fields.Char(
+        string="Fund Category",
+        help="Optional category used by approval rules and reporting.",
+    )
+
     fund_currency_id = fields.Many2one(
         comodel_name="res.currency",
         related="company_id.currency_id",

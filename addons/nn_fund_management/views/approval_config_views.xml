@@ -8,7 +8,9 @@
                 <field name="name" />
                 <field name="request_type" />
                 <field name="project_id" optional="hide" />
+                <field name="project_category" optional="hide" />
                 <field name="expense_head_id" optional="hide" />
+                <field name="expense_category" optional="hide" />
                 <field name="company_id" groups="base.group_multi_company" />
                 <field name="min_amount" />
                 <field name="max_amount" />
@@ -38,8 +40,10 @@
                         </group>
                     </group>
                     <group string="Optional Target Filter">
-                        <field name="project_id" invisible="expense_head_id" />
-                        <field name="expense_head_id" invisible="project_id" />
+                        <field name="project_id" invisible="expense_head_id or project_category or expense_category" />
+                        <field name="project_category" invisible="project_id or expense_head_id or expense_category" />
+                        <field name="expense_head_id" invisible="project_id or project_category or expense_category" />
+                        <field name="expense_category" invisible="project_id or project_category or expense_head_id" />
                     </group>
                     <notebook>
                         <page string="Approval Steps">

@@ -42,10 +42,18 @@ class ApprovalConfig(models.Model):
         string="Project Filter",
         help="Optional project-specific approval rule filter.",
     )
+    project_category = fields.Char(
+        string="Project Category Filter",
+        help="Optional project category-based approval rule filter.",
+    )
     expense_head_id = fields.Many2one(
         comodel_name="nn.expense.head",
         string="Expense Head Filter",
         help="Optional expense-head-specific approval rule filter.",
+    )
+    expense_category = fields.Char(
+        string="Expense Category Filter",
+        help="Optional expense category-based approval rule filter.",
     )
     active = fields.Boolean(default=True)
     line_ids = fields.One2many(
@@ -78,6 +86,18 @@ class ApprovalConfig(models.Model):
             if record.project_id and record.expense_head_id:
                 raise ValidationError("Approval configuration can filter by either a project or an expense head, but not both.")
 
+    @api.constrains("project_id", "project_category")
+    def _check_project_filter_combination(self):
+        for record in self:
+            if record.project_id and record.project_category:
+                raise ValidationError("Use either a specific project filter or a project category filter, but not both.")
+
+    @api.constrains("expense_head_id", "expense_category")
+    def _check_expense_filter_combination(self):
+        for record in self:
+            if record.expense_head_id and record.expense_category:
+                raise ValidationError("Use either a specific expense head filter or an expense category filter, but not both.")
+
     def get_matching_config(self, request_type, company, amount, project=False, expense_head=False):
         """Return the best matching active approval configuration."""
 
@@ -92,18 +112,33 @@ class ApprovalConfig(models.Model):
         ]
         if project:
             domain += ["|", ("project_id", "=", False), ("project_id", "=", project.id)]
+            domain += ["|", ("project_category", "=", False), ("project_category", "=", project.fund_category or False)]
         else:
-            domain += [("project_id", "=", False)]
+            domain += [("project_id", "=", False), ("project_category", "=", False)]
         if expense_head:
             domain += ["|", ("expense_head_id", "=", False), ("expense_head_id", "=", expense_head.id)]
+            domain += ["|", ("expense_category", "=", False), ("expense_category", "=", expense_head.expense_category or False)]
         else:
-            domain += [("expense_head_id", "=", False)]
+            domain += [("expense_head_id", "=", False), ("expense_category", "=", False)]
 
-        return self.sudo().search(
+        configs = self.sudo().search(
             domain,
             order="min_amount desc, id asc",
-            limit=1,
         )
+        if not configs:
+            return configs
+
+        def _score(config):
+            return (
+                1 if config.project_id else 0,
+                1 if config.project_category else 0,
+                1 if config.expense_head_id else 0,
+                1 if config.expense_category else 0,
+                float(config.min_amount or 0.0),
+                -config.id,
+            )
+
+        return configs.sorted(key=_score, reverse=True)[:1]
 
 
 class ApprovalConfigLine(models.Model):

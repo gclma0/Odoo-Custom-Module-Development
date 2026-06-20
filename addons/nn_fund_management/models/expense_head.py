@@ -13,6 +13,11 @@ class ExpenseHead(models.Model):
 
     name = fields.Char(required=True, tracking=True)
     code = fields.Char(tracking=True)
+    expense_category = fields.Char(
+        string="Expense Category",
+        tracking=True,
+        help="Optional category used by approval rules and reporting.",
+    )
     company_id = fields.Many2one(
         comodel_name="res.company",
         required=True,
