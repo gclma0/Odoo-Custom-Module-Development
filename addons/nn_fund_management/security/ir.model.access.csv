@@ -28,7 +28,9 @@ access_nn_fund_transfer_finance,access.nn.fund.transfer.finance,model_nn_fund_tr
 access_nn_fund_transfer_gm,access.nn.fund.transfer.gm,model_nn_fund_transfer,nn_fund_management.group_gm_approver,1,1,0,0
 access_nn_fund_transfer_md,access.nn.fund.transfer.md,model_nn_fund_transfer,nn_fund_management.group_md_approver,1,1,0,0
 access_nn_fund_transfer_admin,access.nn.fund.transfer.admin,model_nn_fund_transfer,nn_fund_management.group_fund_administrator,1,1,1,1
-access_nn_fund_dashboard_wizard_user,access.nn.fund.dashboard.wizard.user,model_nn_fund_dashboard_wizard,base.group_user,1,0,0,0
+access_nn_fund_dashboard_wizard_user,access.nn.fund.dashboard.wizard.user,model_nn_fund_dashboard_wizard,,1,1,1,1
+access_nn_fund_dashboard_wizard_all,access.nn.fund.dashboard.wizard.all,model_nn_fund_dashboard_wizard,base.group_user,1,1,1,1
+access_nn_fund_dashboard_wizard_admin,access.nn.fund.dashboard.wizard.admin,model_nn_fund_dashboard_wizard,base.group_system,1,1,1,1
 access_nn_approval_config_admin,access.nn.approval.config.admin,model_nn_approval_config,nn_fund_management.group_fund_administrator,1,1,1,1
 access_nn_approval_config_line_admin,access.nn.approval.config.line.admin,model_nn_approval_config_line,nn_fund_management.group_fund_administrator,1,1,1,1
 access_nn_approval_history_user,access.nn.approval.history.user,model_nn_approval_history,nn_fund_management.group_fund_user,1,0,0,0
