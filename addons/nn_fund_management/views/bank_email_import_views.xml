@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_nn_bank_email_import_tree" model="ir.ui.view">
+        <field name="name">nn.bank.email.import.tree</field>
+        <field name="model">nn.bank.email.import</field>
+        <field name="arch" type="xml">
+            <tree string="Bank Email Imports">
+                <field name="message_id" />
+                <field name="email_subject" />
+                <field name="fund_account_id" />
+                <field name="transaction_reference" />
+                <field name="received_amount" />
+                <field name="state" widget="badge" decoration-success="state == 'processed'" decoration-danger="state == 'failed'" decoration-warning="state == 'draft'" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_nn_bank_email_import_form" model="ir.ui.view">
+        <field name="name">nn.bank.email.import.form</field>
+        <field name="model">nn.bank.email.import</field>
+        <field name="arch" type="xml">
+            <form string="Bank Email Import">
+                <header>
+                    <button name="action_process_email" type="object" string="Process Email" class="btn-primary" invisible="state != 'draft'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
+                    <field name="state" widget="statusbar" statusbar_visible="draft,processed,failed" />
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" />
+                            <field name="fund_account_id" />
+                            <field name="message_id" />
+                            <field name="email_subject" />
+                        </group>
+                        <group>
+                            <field name="email_from" />
+                            <field name="bank_name" readonly="1" />
+                            <field name="account_number" readonly="1" />
+                            <field name="transaction_reference" readonly="1" />
+                            <field name="transaction_date" readonly="1" />
+                            <field name="received_amount" readonly="1" />
+                            <field name="incoming_fund_id" readonly="1" />
+                        </group>
+                    </group>
+                    <group string="Email Body">
+                        <field name="raw_email_body" placeholder="Paste the bank notification email body here. Example:&#10;Bank: Demo Bank&#10;Account Number: XXXX1234&#10;Transaction Reference: REF123&#10;Transaction Date: 2026-06-20&#10;Received Amount: 100000" />
+                    </group>
+                    <group string="Failure Reason" invisible="state != 'failed'">
+                        <field name="failure_reason" readonly="1" />
+                    </group>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+    <record id="view_nn_bank_email_import_search" model="ir.ui.view">
+        <field name="name">nn.bank.email.import.search</field>
+        <field name="model">nn.bank.email.import</field>
+        <field name="arch" type="xml">
+            <search string="Bank Email Imports">
+                <field name="message_id" />
+                <field name="transaction_reference" />
+                <field name="state" />
+                <filter name="filter_processed" string="Processed" domain="[('state', '=', 'processed')]" />
+                <filter name="filter_failed" string="Failed" domain="[('state', '=', 'failed')]" />
+            </search>
+        </field>
+    </record>
+
+    <record id="action_nn_bank_email_import" model="ir.actions.act_window">
+        <field name="name">Bank Email Imports</field>
+        <field name="res_model">nn.bank.email.import</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_nn_bank_email_import_search" />
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Import a bank notification email</p>
+            <p>
+                This prototype parses pasted bank email content, prevents duplicate message processing, logs failures, and creates incoming funds in pending verification state.
+            </p>
+        </field>
+    </record>
+</odoo>

@@ -37,6 +37,16 @@ class ApprovalConfig(models.Model):
     )
     min_amount = fields.Monetary(currency_field="currency_id", default=0.0, tracking=True)
     max_amount = fields.Monetary(currency_field="currency_id", tracking=True)
+    project_id = fields.Many2one(
+        comodel_name="project.project",
+        string="Project Filter",
+        help="Optional project-specific approval rule filter.",
+    )
+    expense_head_id = fields.Many2one(
+        comodel_name="nn.expense.head",
+        string="Expense Head Filter",
+        help="Optional expense-head-specific approval rule filter.",
+    )
     active = fields.Boolean(default=True)
     line_ids = fields.One2many(
         comodel_name="nn.approval.config.line",
@@ -62,19 +72,35 @@ class ApprovalConfig(models.Model):
             if record.max_amount and record.max_amount < record.min_amount:
                 raise ValidationError("Maximum amount must be greater than or equal to minimum amount.")
 
-    def get_matching_config(self, request_type, company, amount):
+    @api.constrains("project_id", "expense_head_id")
+    def _check_single_target_filter(self):
+        for record in self:
+            if record.project_id and record.expense_head_id:
+                raise ValidationError("Approval configuration can filter by either a project or an expense head, but not both.")
+
+    def get_matching_config(self, request_type, company, amount, project=False, expense_head=False):
         """Return the best matching active approval configuration."""
 
+        domain = [
+            ("request_type", "=", request_type),
+            ("company_id", "=", company.id),
+            ("active", "=", True),
+            ("min_amount", "<=", amount),
+            "|",
+            ("max_amount", "=", False),
+            ("max_amount", ">=", amount),
+        ]
+        if project:
+            domain += ["|", ("project_id", "=", False), ("project_id", "=", project.id)]
+        else:
+            domain += [("project_id", "=", False)]
+        if expense_head:
+            domain += ["|", ("expense_head_id", "=", False), ("expense_head_id", "=", expense_head.id)]
+        else:
+            domain += [("expense_head_id", "=", False)]
+
         return self.sudo().search(
-            [
-                ("request_type", "=", request_type),
-                ("company_id", "=", company.id),
-                ("active", "=", True),
-                ("min_amount", "<=", amount),
-                "|",
-                ("max_amount", "=", False),
-                ("max_amount", ">=", amount),
-            ],
+            domain,
             order="min_amount desc, id asc",
             limit=1,
         )

@@ -17,6 +17,7 @@
         "views/fund_account_views.xml",
         "views/expense_head_views.xml",
         "views/incoming_fund_views.xml",
+        "views/bank_email_import_views.xml",
         "views/fund_allocation_views.xml",
         "views/fund_requisition_views.xml",
         "views/fund_bill_views.xml",

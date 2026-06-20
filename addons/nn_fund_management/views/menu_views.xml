@@ -69,6 +69,15 @@
     />
 
     <menuitem
+        id="menu_nn_bank_email_import"
+        name="Bank Email Imports"
+        parent="menu_nn_fund_management_operations"
+        action="nn_fund_management.action_nn_bank_email_import"
+        sequence="12"
+        groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
+    />
+
+    <menuitem
         id="menu_nn_fund_allocation"
         name="Fund Allocations"
         parent="menu_nn_fund_management_operations"

@@ -41,6 +41,7 @@ class IncomingFund(models.Model):
     state = fields.Selection(
         selection=[
             ("draft", "Draft"),
+            ("pending_verification", "Pending Verification"),
             ("confirmed", "Confirmed"),
             ("cancelled", "Cancelled"),
             ("reversed", "Reversed"),
@@ -102,8 +103,10 @@ class IncomingFund(models.Model):
         self._check_company_access()
 
         for record in self:
-            if record.state != "draft":
-                raise UserError("Only draft incoming funds can be confirmed.")
+            if record.state not in ("draft", "pending_verification"):
+                raise UserError("Only draft or pending verification incoming funds can be confirmed.")
+
+        previous_states = {record.id: record.state for record in self}
 
         self.write(
             {
@@ -113,7 +116,7 @@ class IncomingFund(models.Model):
             }
         )
         for record in self:
-            record._create_audit_entry("confirmed", "draft", "confirmed")
+            record._create_audit_entry("confirmed", previous_states.get(record.id, "draft"), "confirmed")
 
     def action_cancel(self):
         self._check_company_access()

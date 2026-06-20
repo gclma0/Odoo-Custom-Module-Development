@@ -7,6 +7,8 @@
             <tree string="Approval Configurations">
                 <field name="name" />
                 <field name="request_type" />
+                <field name="project_id" optional="hide" />
+                <field name="expense_head_id" optional="hide" />
                 <field name="company_id" groups="base.group_multi_company" />
                 <field name="min_amount" />
                 <field name="max_amount" />
@@ -34,6 +36,10 @@
                             <field name="max_amount" />
                             <field name="active" />
                         </group>
+                    </group>
+                    <group string="Optional Target Filter">
+                        <field name="project_id" invisible="expense_head_id" />
+                        <field name="expense_head_id" invisible="project_id" />
                     </group>
                     <notebook>
                         <page string="Approval Steps">

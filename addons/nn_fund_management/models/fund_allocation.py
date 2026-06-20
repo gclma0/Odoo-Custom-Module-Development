@@ -194,7 +194,9 @@ class FundAllocation(models.Model):
 
     def _get_matching_config(self):
         self.ensure_one()
-        config = self.env["nn.approval.config"].get_matching_config("allocation", self.company_id, self.amount)
+        config = self.env["nn.approval.config"].get_matching_config(
+            "allocation", self.company_id, self.amount, project=self.project_id, expense_head=self.expense_head_id
+        )
         if not config:
             raise UserError("No active approval configuration matches this allocation amount and company.")
         lines = config.line_ids.sorted(key=lambda line: (line.sequence, line.id))

@@ -226,7 +226,13 @@ class FundTransfer(models.Model):
 
     def _get_matching_config(self):
         self.ensure_one()
-        config = self.env["nn.approval.config"].get_matching_config("transfer", self.company_id, self.amount)
+        config = self.env["nn.approval.config"].get_matching_config(
+            "transfer",
+            self.company_id,
+            self.amount,
+            project=self.source_project_id or self.destination_project_id,
+            expense_head=self.source_expense_head_id or self.destination_expense_head_id,
+        )
         if not config:
             raise UserError("No active approval configuration matches this transfer amount and company.")
         lines = config.line_ids.sorted(key=lambda line: (line.sequence, line.id))
