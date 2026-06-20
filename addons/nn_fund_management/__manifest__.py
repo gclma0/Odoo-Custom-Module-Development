@@ -26,5 +26,7 @@
         "views/menu_views.xml",
         "data/sequence_data.xml",
     ],
-    "demo": [],
+    "demo": [
+        "demo/demo_data.xml",
+    ],
 }

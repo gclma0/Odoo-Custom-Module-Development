@@ -71,7 +71,7 @@ class IncomingFund(models.Model):
 
     def _create_audit_entry(self, decision, old_state, new_state, comment=False):
         self.ensure_one()
-        self.env["nn.approval.history"].create(
+        self.env["nn.approval.history"].sudo().create(
             {
                 "request_type": "incoming_fund",
                 "res_model": self._name,

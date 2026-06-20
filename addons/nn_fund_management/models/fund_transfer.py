@@ -89,7 +89,7 @@ class FundTransfer(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get("transfer_number", "New") == "New":
-                vals["transfer_number"] = self.env["ir.sequence"].next_by_code("nn.fund.transfer") or "New"
+                vals["transfer_number"] = self.env["ir.sequence"].sudo().next_by_code("nn.fund.transfer") or "New"
         return super().create(vals_list)
 
     @api.constrains("source_project_id", "source_expense_head_id")
@@ -150,7 +150,7 @@ class FundTransfer(models.Model):
         self.ensure_one()
         if not self.approval_config_id:
             return self.env["nn.approval.config.line"]
-        return self.approval_config_id.line_ids.sorted(key=lambda line: (line.sequence, line.id))
+        return self.sudo().approval_config_id.line_ids.sorted(key=lambda line: (line.sequence, line.id))
 
     def _get_next_line(self):
         self.ensure_one()
@@ -170,23 +170,24 @@ class FundTransfer(models.Model):
 
     def _check_current_approver(self):
         self.ensure_one()
-        line = self.current_approval_line_id
+        line = self.sudo().current_approval_line_id
         if not line:
             raise UserError("There is no current approval step for this transfer.")
         if self.requested_by == self.env.user and not self.env.user.has_group("nn_fund_management.group_fund_administrator"):
             raise UserError("You cannot approve your own transfer request.")
 
         allowed = False
-        if line.approver_user_id and line.approver_user_id == self.env.user:
+        line_sudo = line.sudo()
+        if line_sudo.approver_user_id and line_sudo.approver_user_id.id == self.env.user.id:
             allowed = True
-        if line.approver_group_id and self.env.user in line.approver_group_id.users:
+        if line_sudo.approver_group_id and self.env.user.id in line_sudo.approver_group_id.users.ids:
             allowed = True
         if not allowed:
             raise UserError("Only the current configured approver can perform this action.")
 
     def _create_history_entry(self, decision, approval_level, old_state, new_state, comment=False):
         self.ensure_one()
-        self.env["nn.approval.history"].create(
+        self.env["nn.approval.history"].sudo().create(
             {
                 "request_type": "transfer",
                 "res_model": self._name,
@@ -248,7 +249,7 @@ class FundTransfer(models.Model):
             if record.state not in ("submitted", "gm_approval", "finance_approval", "md_approval"):
                 raise UserError("Only transfers pending approval can be approved.")
             record._check_current_approver()
-            current_line = record.current_approval_line_id
+            current_line = record.sudo().current_approval_line_id
             old_state = record.state
             next_line = record._get_next_line()
             if next_line:
@@ -266,7 +267,7 @@ class FundTransfer(models.Model):
                 raise UserError("Only transfers pending approval can be rejected.")
             record._check_current_approver()
             old_state = record.state
-            approval_level = record.current_approval_line_id.approval_level
+            approval_level = record.sudo().current_approval_line_id.approval_level
             record.write({"state": "rejected", "current_approval_line_id": False})
             record._create_history_entry("rejected", approval_level, old_state, "rejected")
 
@@ -280,7 +281,8 @@ class FundTransfer(models.Model):
             if record.requested_by != self.env.user and not self.env.user.has_group("nn_fund_management.group_fund_administrator"):
                 raise UserError("Only the requester or a fund administrator can cancel this transfer.")
             old_state = record.state
-            approval_level = record.current_approval_line_id.approval_level if record.current_approval_line_id else "gm"
+            current_line = record.sudo().current_approval_line_id
+            approval_level = current_line.approval_level if current_line else "gm"
             record.write({"state": "cancelled", "current_approval_line_id": False})
             record._create_history_entry("cancelled", approval_level, old_state, "cancelled")
 

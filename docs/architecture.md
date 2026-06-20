@@ -2,102 +2,266 @@
 
 ## 1. Objective
 
-## 2. Core Models
+The module manages the controlled movement of money across these stages:
+
+1. funds are received into a fund account
+2. money remains unassigned until allocated
+3. allocations move money to a project or expense head
+4. requisitions reserve allocated funds for later billing
+5. bills consume approved requisition balances
+6. transfers move available funds between projects and expense heads
+
+The architectural priority is financial integrity:
+
+- balances are computed from workflow records
+- pending amounts are held and excluded from reuse
+- approved reserved amounts remain unavailable for other requests
+- reversal is conservative when downstream balances already consumed the money
 
 ## 2. Core Models
 
-The module will use the following models:
-
-- `nn.fund.account` - stores bank, cash or other fund accounts.
-- `nn.incoming.fund` - records incoming funds received into a fund account.
-- `project.project` - Odoo's standard project model used for project-based allocation.
-- `nn.expense.head` - custom model for expense categories such as salary, rent, utility, marketing and administration.
-- `nn.fund.allocation` - handles allocation of unassigned funds to a project or expense head.
-- `nn.fund.requisition` - handles fund requests from a project or expense head.
-- `nn.fund.bill` - custom bill model linked to approved requisitions.
-- `nn.fund.transfer` - handles transfers between projects and/or expense heads.
-- `nn.approval.history` - stores approval and rejection history.
-- `nn.approval.config` - stores configurable GM and MD approvers.
+- `nn.fund.account`
+  - source account for incoming money
+- `nn.incoming.fund`
+  - records received money and confirmation status
+- `project.project`
+  - standard Odoo project model extended with fund balance fields
+- `nn.expense.head`
+  - non-project allocation target such as salary, rent, or utilities
+- `nn.fund.allocation`
+  - moves unassigned fund account money to a project or expense head
+- `nn.fund.requisition`
+  - reserves available project or expense balance for later billing
+- `nn.fund.bill`
+  - custom bill record linked to an approved requisition
+- `nn.fund.transfer`
+  - moves available balance between projects and expense heads
+- `nn.approval.config`
+  - stores approval rules by request type, company, and amount range
+- `nn.approval.config.line`
+  - stores ordered approval steps
+- `nn.approval.history`
+  - stores workflow approvals and broader audit events
 
 ## 3. Entity Relationships
 
 ### Fund Account
 
-- One fund account can have many incoming funds.
-- One fund account can have many fund allocation requests.
-- Fund account balances are calculated from confirmed incoming funds and allocation records.
+- one fund account has many incoming funds
+- one fund account has many allocation requests
+- its balance is derived from confirmed incoming funds plus allocation workflow state
 
-### Incoming Fund
+### Project and Expense Head
 
-- Each incoming fund belongs to one fund account.
-- Incoming funds increase the fund account's total received amount after confirmation.
-- Transaction reference must be unique within the same fund account.
+- projects and expense heads are parallel allocation targets
+- both can receive approved allocations
+- both can issue requisitions
+- both can be source or destination in transfers
+- both can accumulate spent amounts through posted bills
 
-### Project
+### Requisition and Bill
 
-- Projects use Odoo's standard `project.project` model.
-- A project can receive fund allocations.
-- A project can have fund requisitions.
-- A project can have bills through approved requisitions.
-- A project can be a source or destination in fund transfers.
+- one requisition belongs to exactly one project or one expense head
+- one approved requisition can have many partial bills
+- posted bills consume requisition remaining billable amount
 
-### Expense Head
+### Approval Models
 
-- Expense heads are stored in `nn.expense.head`.
-- An expense head can receive fund allocations.
-- An expense head can have fund requisitions.
-- An expense head can have bills through approved requisitions.
-- An expense head can be a source or destination in fund transfers.
-
-### Fund Allocation
-
-- Each allocation belongs to one fund account.
-- Each allocation must target either one project or one expense head.
-- An allocation cannot target both project and expense head at the same time.
-- Approved allocations increase the available fund of the selected project or expense head.
-
-### Fund Requisition
-
-- Each requisition must belong to either one project or one expense head.
-- A requisition cannot belong to both project and expense head at the same time.
-- Approved requisitions reserve money for bills.
-- A requisition can have multiple partial bills.
-
-### Fund Bill
-
-- Each bill must be linked to one approved fund requisition.
-- A bill must use the same project or expense head as its requisition.
-- Posted bills reduce the remaining billable amount of the requisition.
-- Posted bills increase the spent amount of the related project or expense head.
-
-### Fund Transfer
-
-- Each transfer has one source and one destination.
-- The source can be a project or an expense head.
-- The destination can be a project or an expense head.
-- The source and destination cannot be the same.
-- Approved transfers reduce the source balance and increase the destination balance.
-
-### Approval History
-
-- Approval history records are linked to allocation, requisition, and transfer records.
-- Each approval history entry stores the approver, approval level, decision, comment, date, previous state, and new state.
-
-### Approval Configuration
-
-- Approval configuration stores the GM and MD approvers per company.
-- Approval users are configurable and not hardcoded.
+- one approval configuration has many approval lines
+- allocation, requisition, and transfer records store the matched approval config and current approval line
+- approval history links back to allocation, requisition, transfer, and bill records as needed
 
 ## 4. Money Flow
 
+### Incoming Fund
+
+- `draft` incoming fund: no balance effect
+- `confirmed` incoming fund:
+  - increases `fund account total received`
+  - increases `fund account available unassigned balance`
+- `reversed` incoming fund:
+  - drops out of confirmed totals
+
+### Allocation
+
+- `submitted` / approval-pending allocation:
+  - decreases fund account available unassigned balance
+  - increases fund account hold
+- `approved` allocation:
+  - decreases fund account unassigned capacity permanently
+  - increases target allocated/available balance
+- `rejected` / `cancelled` allocation:
+  - releases hold back to fund account
+- `reversed` allocation:
+  - removes approved allocation effect if downstream target balance is still safely reversible
+
+### Requisition
+
+- `submitted` / approval-pending requisition:
+  - increases target requisition hold
+  - decreases target available balance
+- `approved` requisition:
+  - removes hold
+  - increases approved unspent reserve
+- `closed` requisition:
+  - releases unused remaining billable amount
+- `reversed` requisition:
+  - allowed only when nothing has been billed and nothing was already released
+
+### Bill
+
+- `posted` bill:
+  - increases requisition spent amount
+  - decreases requisition remaining billable amount
+  - increases target total spent amount
+- `cancelled` bill:
+  - drops out of posted totals
+  - restores remaining billable balance
+
+### Transfer
+
+- `submitted` / approval-pending transfer:
+  - increases source transfer hold
+  - decreases source available balance
+- `approved` transfer:
+  - increases source outgoing transfer total
+  - increases destination incoming transfer total
+  - moves effective available balance from source to destination
+- `rejected` / `cancelled` transfer:
+  - releases source hold
+- `reversed` transfer:
+  - allowed only if destination still has enough free available balance
+
 ## 5. Balance Calculation Logic
+
+### Fund Account
+
+- `total_received`
+  - sum of confirmed incoming funds
+- `amount_on_hold`
+  - sum of pending allocations
+- `total_assigned_amount`
+  - sum of approved allocations
+- `available_unassigned_balance`
+  - confirmed incoming
+  - minus pending allocation hold
+  - minus approved assigned amount
+
+### Project / Expense Head
+
+- `total_allocated_fund`
+  - sum of approved allocations to the target
+- `requisition_hold`
+  - sum of pending requisitions
+- `transfer_hold`
+  - sum of pending outgoing transfers
+- `approved_unspent_amount`
+  - sum of remaining billable amounts on approved requisitions
+- `total_spent_amount`
+  - sum of posted bills
+- `incoming_transfer_amount`
+  - sum of approved incoming transfers
+- `outgoing_transfer_amount`
+  - sum of approved outgoing transfers
+- `available_fund`
+  - approved allocations
+  - plus approved incoming transfers
+  - minus approved outgoing transfers
+  - minus requisition hold
+  - minus transfer hold
+  - minus approved unspent requisition reserve
 
 ## 6. Workflow States
 
+### Incoming Fund
+
+- `draft -> confirmed / cancelled -> reversed`
+
+### Allocation
+
+- `draft -> submitted -> gm_approval -> finance_approval -> md_approval -> approved / rejected / cancelled / reversed`
+
+### Requisition
+
+- `draft -> submitted -> gm_approval -> finance_approval -> md_approval -> approved / rejected / cancelled / closed / reversed`
+
+### Bill
+
+- `draft -> posted -> cancelled`
+
+### Transfer
+
+- `draft -> submitted -> gm_approval -> finance_approval -> md_approval -> approved / rejected / cancelled / reversed`
+
+Note:
+- the minimum required approver chain is `GM -> MD`
+- the model also supports an optional `Finance` approval level through configuration
+
 ## 7. Approval Logic
+
+- approvers are not hardcoded in business models
+- approval config is matched by:
+  - request type
+  - company
+  - amount range
+- approval lines are processed in sequence order
+- current approver is enforced server-side
+- self-approval is blocked for requesters unless specially privileged
+- audit entries are written for submit, approve, reject, cancel, reverse, confirm, post, and close events
 
 ## 8. Security Groups
 
-## 9. Menu Structure
+- `Fund User`
+  - basic create/view access to allowed workflow records
+- `Finance User`
+  - can confirm incoming funds, post/cancel bills, and handle finance-level actions
+- `GM Approver`
+  - approves configured GM steps
+- `MD Approver`
+  - approves configured MD steps
+- `Fund Administrator`
+  - full access and setup authority
 
-## 10. Double-Spending Prevention
+## 9. Security Design
+
+Security is enforced at multiple layers:
+
+- model ACLs
+- company-based record rules
+- server-side action checks via a shared company access mixin
+- workflow-specific permission checks inside methods
+
+This means hidden buttons alone are not trusted.
+
+## 10. Menu Structure
+
+`Fund Management`
+
+- `Operations`
+  - Incoming Funds
+  - Fund Allocations
+  - Fund Requisitions
+  - Fund Bills
+  - Fund Transfers
+  - Approval History
+- `Configuration`
+  - Fund Accounts
+  - Expense Heads
+  - Approval Configurations
+
+## 11. Double-Spending Prevention
+
+Double spending is prevented by a combination of:
+
+- computed balances from transactional records
+- workflow-state-dependent hold logic
+- amount validation before submit/post actions
+- remaining billable amount enforcement on bills
+- transfer hold and requisition hold reducing available balances
+- conservative reversal rules that block undoing records once downstream balances are already consumed
+
+## 12. Known Architectural Tradeoffs
+
+- custom `Fund Bill` model is used instead of vendor bills to keep workflow control simpler for this assessment
+- approval history acts as a generalized audit log instead of a full accounting journal
+- reversal flows are intentionally strict to protect integrity over convenience

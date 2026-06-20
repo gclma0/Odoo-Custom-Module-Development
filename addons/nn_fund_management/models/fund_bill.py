@@ -62,7 +62,7 @@ class FundBill(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             if vals.get("bill_number", "New") == "New":
-                vals["bill_number"] = self.env["ir.sequence"].next_by_code("nn.fund.bill") or "New"
+                vals["bill_number"] = self.env["ir.sequence"].sudo().next_by_code("nn.fund.bill") or "New"
         return super().create(vals_list)
 
     @api.constrains("amount")
@@ -96,7 +96,7 @@ class FundBill(models.Model):
 
     def _create_audit_entry(self, decision, old_state, new_state):
         self.ensure_one()
-        self.env["nn.approval.history"].create(
+        self.env["nn.approval.history"].sudo().create(
             {
                 "request_type": "bill",
                 "res_model": self._name,

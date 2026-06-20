@@ -1,3 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="demo_project_a" model="project.project">
+        <field name="name">Project A</field>
+        <field name="company_id" ref="base.main_company" />
+    </record>
+
+    <record id="demo_project_b" model="project.project">
+        <field name="name">Project B</field>
+        <field name="company_id" ref="base.main_company" />
+    </record>
+
+    <record id="demo_fund_account_main" model="nn.fund.account">
+        <field name="name">Main Fund Account</field>
+        <field name="code">MAIN-FUND</field>
+        <field name="account_type">bank</field>
+        <field name="company_id" ref="base.main_company" />
+        <field name="description">Primary demo fund account for the sample walkthrough.</field>
+    </record>
+
+    <record id="demo_expense_head_salary" model="nn.expense.head">
+        <field name="name">Salary</field>
+        <field name="code">SALARY</field>
+        <field name="company_id" ref="base.main_company" />
+    </record>
+
+    <record id="demo_expense_head_rent" model="nn.expense.head">
+        <field name="name">Office Rent</field>
+        <field name="code">RENT</field>
+        <field name="company_id" ref="base.main_company" />
+    </record>
+
+    <record id="demo_expense_head_utility" model="nn.expense.head">
+        <field name="name">Utility Expenses</field>
+        <field name="code">UTILITY</field>
+        <field name="company_id" ref="base.main_company" />
+    </record>
+
+    <record id="demo_expense_head_marketing" model="nn.expense.head">
+        <field name="name">Marketing Expenses</field>
+        <field name="code">MARKETING</field>
+        <field name="company_id" ref="base.main_company" />
+    </record>
+
+    <record id="demo_expense_head_admin" model="nn.expense.head">
+        <field name="name">Administrative Expenses</field>
+        <field name="code">ADMIN</field>
+        <field name="company_id" ref="base.main_company" />
+    </record>
+
+    <record id="demo_approval_config_allocation" model="nn.approval.config">
+        <field name="name">Demo Allocation Approval</field>
+        <field name="request_type">allocation</field>
+        <field name="company_id" ref="base.main_company" />
+        <field name="min_amount">0</field>
+        <field name="notes">Default demo approval flow for allocation requests.</field>
+        <field name="line_ids" eval="[(0, 0, {'sequence': 10, 'approval_level': 'gm', 'approver_group_id': ref('nn_fund_management.group_gm_approver'), 'required': True}), (0, 0, {'sequence': 20, 'approval_level': 'md', 'approver_group_id': ref('nn_fund_management.group_md_approver'), 'required': True})]" />
+    </record>
+
+    <record id="demo_approval_config_requisition" model="nn.approval.config">
+        <field name="name">Demo Requisition Approval</field>
+        <field name="request_type">requisition</field>
+        <field name="company_id" ref="base.main_company" />
+        <field name="min_amount">0</field>
+        <field name="notes">Default demo approval flow for requisition requests.</field>
+        <field name="line_ids" eval="[(0, 0, {'sequence': 10, 'approval_level': 'gm', 'approver_group_id': ref('nn_fund_management.group_gm_approver'), 'required': True}), (0, 0, {'sequence': 20, 'approval_level': 'md', 'approver_group_id': ref('nn_fund_management.group_md_approver'), 'required': True})]" />
+    </record>
+
+    <record id="demo_approval_config_transfer" model="nn.approval.config">
+        <field name="name">Demo Transfer Approval</field>
+        <field name="request_type">transfer</field>
+        <field name="company_id" ref="base.main_company" />
+        <field name="min_amount">0</field>
+        <field name="notes">Default demo approval flow for transfer requests.</field>
+        <field name="line_ids" eval="[(0, 0, {'sequence': 10, 'approval_level': 'gm', 'approver_group_id': ref('nn_fund_management.group_gm_approver'), 'required': True}), (0, 0, {'sequence': 20, 'approval_level': 'md', 'approver_group_id': ref('nn_fund_management.group_md_approver'), 'required': True})]" />
+    </record>
 </odoo>

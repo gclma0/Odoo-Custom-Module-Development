@@ -65,7 +65,7 @@ class ApprovalConfig(models.Model):
     def get_matching_config(self, request_type, company, amount):
         """Return the best matching active approval configuration."""
 
-        return self.search(
+        return self.sudo().search(
             [
                 ("request_type", "=", request_type),
                 ("company_id", "=", company.id),
