@@ -178,3 +178,9 @@ class FundBill(models.Model):
                     "posted_date": False,
                 }
             )
+
+    def unlink(self):
+        for record in self:
+            if record.state != "draft":
+                raise UserError("Only draft fund bills can be deleted. Posted or cancelled records must remain in history.")
+        return super().unlink()

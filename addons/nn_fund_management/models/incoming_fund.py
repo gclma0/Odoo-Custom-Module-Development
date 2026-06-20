@@ -120,7 +120,8 @@ class IncomingFund(models.Model):
         for record in self:
             if record.state != "draft":
                 raise UserError("Only draft incoming funds can be cancelled.")
-        self.write({"state": "cancelled"})
+            record.write({"state": "cancelled"})
+            record._create_audit_entry("cancelled", "draft", "cancelled")
 
     def action_reset_to_draft(self):
         self._check_company_access()
@@ -148,3 +149,9 @@ class IncomingFund(models.Model):
                 }
             )
             record._create_audit_entry("reversed", old_state, "reversed")
+
+    def unlink(self):
+        for record in self:
+            if record.state != "draft":
+                raise UserError("Only draft incoming funds can be deleted. Confirmed records must be cancelled or reversed instead.")
+        return super().unlink()

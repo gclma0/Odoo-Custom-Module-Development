@@ -221,14 +221,15 @@ class FundRequisition(models.Model):
             config = record._get_matching_config()
             first_line = config.line_ids.sorted(key=lambda line: (line.sequence, line.id))[:1]
             old_state = record.state
+            new_state = record._map_state_from_line(first_line)
             record.write(
                 {
                     "approval_config_id": config.id,
                     "current_approval_line_id": first_line.id,
-                    "state": "submitted",
+                    "state": new_state,
                 }
             )
-            record._create_history_entry("submitted", first_line.approval_level, old_state, "submitted")
+            record._create_history_entry("submitted", first_line.approval_level, old_state, new_state)
 
     def action_approve(self):
         self._check_company_access()
@@ -315,3 +316,9 @@ class FundRequisition(models.Model):
             old_state = record.state
             record.write({"state": "reversed"})
             record._create_history_entry("reversed", "finance", old_state, "reversed")
+
+    def unlink(self):
+        for record in self:
+            if record.state != "draft":
+                raise UserError("Only draft fund requisitions can be deleted. Submitted or completed records must remain in history.")
+        return super().unlink()
