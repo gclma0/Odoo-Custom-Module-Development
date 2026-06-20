@@ -42,6 +42,7 @@ class FundRequisition(models.Model):
             ("rejected", "Rejected"),
             ("cancelled", "Cancelled"),
             ("closed", "Closed"),
+            ("reversed", "Reversed"),
         ],
         required=True,
         default="draft",
@@ -294,3 +295,21 @@ class FundRequisition(models.Model):
                     "approval_comment": False,
                 }
             )
+
+    def action_reverse(self):
+        finance_group = "nn_fund_management.group_finance_user"
+        admin_group = "nn_fund_management.group_fund_administrator"
+        if not (self.env.user.has_group(finance_group) or self.env.user.has_group(admin_group)):
+            raise UserError("Only authorized finance users can reverse approved requisitions.")
+
+        self._check_company_access()
+        for record in self:
+            if record.state != "approved":
+                raise UserError("Only approved requisitions can be reversed.")
+            if record.spent_amount > 0:
+                raise UserError("A requisition with posted bills cannot be reversed.")
+            if record.released_amount > 0:
+                raise UserError("A requisition that has already released unused funds cannot be reversed.")
+            old_state = record.state
+            record.write({"state": "reversed"})
+            record._create_history_entry("reversed", "finance", old_state, "reversed")
