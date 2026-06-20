@@ -48,16 +48,19 @@ class TestFundManagement(TransactionCase):
     @classmethod
     def _create_user(cls, login, group_ids):
         effective_groups = list(set(group_ids + [cls.group_internal_user.id, cls.group_project_user.id]))
-        return cls.Users.create(
-            {
-                "name": login,
-                "login": login,
-                "email": f"{login}@example.com",
-                "company_id": cls.company.id,
-                "company_ids": [(6, 0, [cls.company.id])],
-                "groups_id": [(6, 0, effective_groups)],
-            }
-        )
+        vals = {
+            "name": login,
+            "login": login,
+            "email": f"{login}@example.com",
+            "company_id": cls.company.id,
+            "company_ids": [(6, 0, [cls.company.id])],
+            "groups_id": [(6, 0, effective_groups)],
+        }
+        user = cls.Users.search([("login", "=", login)], limit=1)
+        if user:
+            user.write(vals)
+            return user
+        return cls.Users.create(vals)
 
     @classmethod
     def _create_approval_config(cls, request_type, name):

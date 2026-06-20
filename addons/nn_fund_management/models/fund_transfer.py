@@ -234,12 +234,12 @@ class FundTransfer(models.Model):
             config = record._get_matching_config()
             first_line = config.line_ids.sorted(key=lambda line: (line.sequence, line.id))[:1]
             old_state = record.state
-            new_state = record._map_state_from_line(first_line)
+            new_state = "submitted"
             record.write(
                 {
                     "approval_config_id": config.id,
                     "current_approval_line_id": first_line.id,
-                    "state": new_state,
+                    "state": "submitted",
                 }
             )
             record._create_history_entry("submitted", first_line.approval_level, old_state, new_state)

@@ -202,7 +202,7 @@ class FundAllocation(models.Model):
 
             config = record._get_matching_config()
             first_line = config.line_ids.sorted(key=lambda line: (line.sequence, line.id))[:1]
-            new_state = record._map_state_from_line(first_line)
+            new_state = "submitted"
             old_state = record.state
             record.write(
                 {
