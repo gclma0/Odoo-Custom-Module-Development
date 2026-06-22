@@ -54,7 +54,22 @@
         <field name="company_id" ref="base.main_company" />
         <field name="min_amount">0</field>
         <field name="notes">Default demo approval flow for allocation requests.</field>
-        <field name="line_ids" eval="[(0, 0, {'sequence': 10, 'approval_level': 'gm', 'approver_group_id': ref('nn_fund_management.group_gm_approver'), 'required': True}), (0, 0, {'sequence': 20, 'approval_level': 'md', 'approver_group_id': ref('nn_fund_management.group_md_approver'), 'required': True})]" />
+    </record>
+
+    <record id="demo_approval_config_allocation_line_gm" model="nn.approval.config.line">
+        <field name="config_id" ref="nn_fund_management.demo_approval_config_allocation" />
+        <field name="sequence">10</field>
+        <field name="approval_level">gm</field>
+        <field name="approver_group_id" ref="nn_fund_management.group_gm_approver" />
+        <field name="required">True</field>
+    </record>
+
+    <record id="demo_approval_config_allocation_line_md" model="nn.approval.config.line">
+        <field name="config_id" ref="nn_fund_management.demo_approval_config_allocation" />
+        <field name="sequence">20</field>
+        <field name="approval_level">md</field>
+        <field name="approver_group_id" ref="nn_fund_management.group_md_approver" />
+        <field name="required">True</field>
     </record>
 
     <record id="demo_approval_config_requisition" model="nn.approval.config">
@@ -63,7 +78,22 @@
         <field name="company_id" ref="base.main_company" />
         <field name="min_amount">0</field>
         <field name="notes">Default demo approval flow for requisition requests.</field>
-        <field name="line_ids" eval="[(0, 0, {'sequence': 10, 'approval_level': 'gm', 'approver_group_id': ref('nn_fund_management.group_gm_approver'), 'required': True}), (0, 0, {'sequence': 20, 'approval_level': 'md', 'approver_group_id': ref('nn_fund_management.group_md_approver'), 'required': True})]" />
+    </record>
+
+    <record id="demo_approval_config_requisition_line_gm" model="nn.approval.config.line">
+        <field name="config_id" ref="nn_fund_management.demo_approval_config_requisition" />
+        <field name="sequence">10</field>
+        <field name="approval_level">gm</field>
+        <field name="approver_group_id" ref="nn_fund_management.group_gm_approver" />
+        <field name="required">True</field>
+    </record>
+
+    <record id="demo_approval_config_requisition_line_md" model="nn.approval.config.line">
+        <field name="config_id" ref="nn_fund_management.demo_approval_config_requisition" />
+        <field name="sequence">20</field>
+        <field name="approval_level">md</field>
+        <field name="approver_group_id" ref="nn_fund_management.group_md_approver" />
+        <field name="required">True</field>
     </record>
 
     <record id="demo_approval_config_transfer" model="nn.approval.config">
@@ -72,6 +102,21 @@
         <field name="company_id" ref="base.main_company" />
         <field name="min_amount">0</field>
         <field name="notes">Default demo approval flow for transfer requests.</field>
-        <field name="line_ids" eval="[(0, 0, {'sequence': 10, 'approval_level': 'gm', 'approver_group_id': ref('nn_fund_management.group_gm_approver'), 'required': True}), (0, 0, {'sequence': 20, 'approval_level': 'md', 'approver_group_id': ref('nn_fund_management.group_md_approver'), 'required': True})]" />
+    </record>
+
+    <record id="demo_approval_config_transfer_line_gm" model="nn.approval.config.line">
+        <field name="config_id" ref="nn_fund_management.demo_approval_config_transfer" />
+        <field name="sequence">10</field>
+        <field name="approval_level">gm</field>
+        <field name="approver_group_id" ref="nn_fund_management.group_gm_approver" />
+        <field name="required">True</field>
+    </record>
+
+    <record id="demo_approval_config_transfer_line_md" model="nn.approval.config.line">
+        <field name="config_id" ref="nn_fund_management.demo_approval_config_transfer" />
+        <field name="sequence">20</field>
+        <field name="approval_level">md</field>
+        <field name="approver_group_id" ref="nn_fund_management.group_md_approver" />
+        <field name="required">True</field>
     </record>
 </odoo>

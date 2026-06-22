@@ -10,6 +10,7 @@ class FundDashboardWizard(models.TransientModel):
 
     _name = "nn.fund.dashboard.wizard"
     _description = "Fund Management Dashboard"
+    _rec_name = "id"
 
     currency_id = fields.Many2one(comodel_name="res.currency", default=lambda self: self.env.company.currency_id.id)
     total_funds_received = fields.Monetary(currency_field="currency_id", readonly=True)
@@ -26,40 +27,39 @@ class FundDashboardWizard(models.TransientModel):
     def default_get(self, fields_list):
         values = super().default_get(fields_list)
         company = self.env.company
-        account_model = self.env["nn.fund.account"].search([("company_id", "=", company.id)])
-        project_model = self.env["project.project"].search([("company_id", "=", company.id)])
-        expense_head_model = self.env["nn.expense.head"].search([("company_id", "=", company.id)])
-
+        account_model = self.env["nn.fund.account"].sudo().search([("company_id", "=", company.id)])
+        project_model = self.env["project.project"].sudo().search([("company_id", "=", company.id)])
+        expense_head_model = self.env["nn.expense.head"].sudo().search([("company_id", "=", company.id)])
         values.update(
             {
-                "currency_id": company.currency_id.id,
-                "total_funds_received": sum(account_model.mapped("total_received")),
-                "unassigned_balance": sum(account_model.mapped("available_unassigned_balance")),
-                "held_amount": sum(account_model.mapped("amount_on_hold"))
-                + sum(project_model.mapped("requisition_hold"))
-                + sum(project_model.mapped("transfer_hold"))
-                + sum(expense_head_model.mapped("requisition_hold"))
-                + sum(expense_head_model.mapped("transfer_hold")),
-                "assigned_amount": sum(account_model.mapped("total_assigned_amount")),
-                "spent_amount": sum(project_model.mapped("total_spent_amount"))
-                + sum(expense_head_model.mapped("total_spent_amount")),
-                "pending_approvals": self._get_pending_approval_count(company),
-                "project_balance_html": self._build_project_balance_html(project_model),
-                "expense_head_balance_html": self._build_expense_head_balance_html(expense_head_model),
-                "recent_movements_html": self._build_recent_movements_html(company),
+            "currency_id": company.currency_id.id,
+            "total_funds_received": sum(account_model.mapped("total_received")),
+            "unassigned_balance": sum(account_model.mapped("available_unassigned_balance")),
+            "held_amount": sum(account_model.mapped("amount_on_hold"))
+            + sum(project_model.mapped("requisition_hold"))
+            + sum(project_model.mapped("transfer_hold"))
+            + sum(expense_head_model.mapped("requisition_hold"))
+            + sum(expense_head_model.mapped("transfer_hold")),
+            "assigned_amount": sum(account_model.mapped("total_assigned_amount")),
+            "spent_amount": sum(project_model.mapped("total_spent_amount"))
+            + sum(expense_head_model.mapped("total_spent_amount")),
+            "pending_approvals": self._get_pending_approval_count(company),
+            "project_balance_html": self._build_project_balance_html(project_model),
+            "expense_head_balance_html": self._build_expense_head_balance_html(expense_head_model),
+            "recent_movements_html": self._build_recent_movements_html(company),
             }
         )
         return values
 
     @api.model
     def action_open_dashboard(self):
-        wizard = self.create({})
+        dashboard = self.create({})
         return {
             "type": "ir.actions.act_window",
             "name": "Fund Dashboard",
             "res_model": self._name,
             "view_mode": "form",
-            "res_id": wizard.id,
+            "res_id": dashboard.id,
             "target": "current",
         }
 
@@ -67,9 +67,9 @@ class FundDashboardWizard(models.TransientModel):
     def _get_pending_approval_count(self, company):
         pending_states = ["submitted", "gm_approval", "finance_approval", "md_approval"]
         return (
-            self.env["nn.fund.allocation"].search_count([("company_id", "=", company.id), ("state", "in", pending_states)])
-            + self.env["nn.fund.requisition"].search_count([("company_id", "=", company.id), ("state", "in", pending_states)])
-            + self.env["nn.fund.transfer"].search_count([("company_id", "=", company.id), ("state", "in", pending_states)])
+            self.env["nn.fund.allocation"].sudo().search_count([("company_id", "=", company.id), ("state", "in", pending_states)])
+            + self.env["nn.fund.requisition"].sudo().search_count([("company_id", "=", company.id), ("state", "in", pending_states)])
+            + self.env["nn.fund.transfer"].sudo().search_count([("company_id", "=", company.id), ("state", "in", pending_states)])
         )
 
     @api.model
@@ -99,15 +99,15 @@ class FundDashboardWizard(models.TransientModel):
     @api.model
     def _build_recent_movements_html(self, company):
         movements = []
-        for record in self.env["nn.incoming.fund"].search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
+        for record in self.env["nn.incoming.fund"].sudo().search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
             movements.append((record.create_date, "Incoming Fund", record.transaction_reference, record.amount, record.state))
-        for record in self.env["nn.fund.allocation"].search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
+        for record in self.env["nn.fund.allocation"].sudo().search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
             movements.append((record.create_date, "Allocation", record.request_number, record.amount, record.state))
-        for record in self.env["nn.fund.requisition"].search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
+        for record in self.env["nn.fund.requisition"].sudo().search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
             movements.append((record.create_date, "Requisition", record.requisition_number, record.amount, record.state))
-        for record in self.env["nn.fund.bill"].search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
+        for record in self.env["nn.fund.bill"].sudo().search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
             movements.append((record.create_date, "Bill", record.bill_number, record.amount, record.state))
-        for record in self.env["nn.fund.transfer"].search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
+        for record in self.env["nn.fund.transfer"].sudo().search([("company_id", "=", company.id)], limit=5, order="create_date desc"):
             movements.append((record.create_date, "Transfer", record.transfer_number, record.amount, record.state))
         movements = sorted(movements, key=lambda item: item[0] or fields.Datetime.now(), reverse=True)[:10]
         rows = "".join(

@@ -11,7 +11,7 @@
         id="menu_nn_fund_dashboard"
         name="Dashboard"
         parent="menu_nn_fund_management_root"
-        action="nn_fund_management.action_nn_fund_dashboard_window"
+        action="nn_fund_management.action_nn_fund_dashboard_open"
         sequence="5"
         groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator"
     />
@@ -29,7 +29,7 @@
         name="Configuration"
         parent="menu_nn_fund_management_root"
         sequence="20"
-        groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
+        groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator"
     />
 
     <menuitem
@@ -38,7 +38,7 @@
         parent="menu_nn_fund_management_configuration"
         action="nn_fund_management.action_nn_fund_account"
         sequence="10"
-        groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
+        groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator"
     />
 
     <menuitem
@@ -47,7 +47,7 @@
         parent="menu_nn_fund_management_configuration"
         action="nn_fund_management.action_nn_expense_head"
         sequence="20"
-        groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator"
+        groups="nn_fund_management.group_fund_user,nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator"
     />
 
     <menuitem

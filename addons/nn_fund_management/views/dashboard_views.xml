@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <delete id="action_nn_fund_dashboard" model="ir.actions.server" />
-
     <record id="view_nn_fund_dashboard_wizard_form" model="ir.ui.view">
         <field name="name">nn.fund.dashboard.wizard.form</field>
         <field name="model">nn.fund.dashboard.wizard</field>
@@ -36,11 +34,10 @@
         </field>
     </record>
 
-    <record id="action_nn_fund_dashboard_window" model="ir.actions.act_window">
-        <field name="name">Fund Dashboard</field>
-        <field name="res_model">nn.fund.dashboard.wizard</field>
-        <field name="view_mode">form</field>
-        <field name="target">current</field>
-        <field name="view_id" ref="view_nn_fund_dashboard_wizard_form" />
+    <record id="action_nn_fund_dashboard_open" model="ir.actions.server">
+        <field name="name">Open Fund Dashboard</field>
+        <field name="model_id" ref="model_nn_fund_dashboard_wizard" />
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_dashboard()</field>
     </record>
 </odoo>
