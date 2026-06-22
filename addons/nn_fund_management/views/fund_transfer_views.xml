@@ -22,12 +22,12 @@
         <field name="arch" type="xml">
             <form string="Fund Transfer">
                 <header>
-                    <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'" />
-                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="state not in ('submitted', 'gm_approval', 'finance_approval', 'md_approval')" groups="nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator" />
-                    <button name="action_reject" type="object" string="Reject" invisible="state not in ('submitted', 'gm_approval', 'finance_approval', 'md_approval')" groups="nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator" />
+                    <button name="action_submit" type="object" string="Submit" class="btn-primary" invisible="state != 'draft'" groups="nn_fund_management.group_fund_user,nn_fund_management.group_fund_administrator" />
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary" invisible="not current_user_can_approve" groups="nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator" />
+                    <button name="action_reject" type="object" string="Reject" invisible="not current_user_can_approve" groups="nn_fund_management.group_finance_user,nn_fund_management.group_gm_approver,nn_fund_management.group_md_approver,nn_fund_management.group_fund_administrator" />
                     <button name="action_reverse" type="object" string="Reverse" invisible="state != 'approved'" groups="nn_fund_management.group_finance_user,nn_fund_management.group_fund_administrator" />
-                    <button name="action_cancel" type="object" string="Cancel" invisible="state in ('approved', 'cancelled')" />
-                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state not in ('rejected', 'cancelled')" />
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state in ('approved', 'cancelled')" groups="nn_fund_management.group_fund_user,nn_fund_management.group_fund_administrator" />
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft" invisible="state not in ('rejected', 'cancelled')" groups="nn_fund_management.group_fund_user,nn_fund_management.group_fund_administrator" />
                     <field name="state" widget="statusbar" statusbar_visible="draft,submitted,gm_approval,finance_approval,md_approval,approved,rejected,cancelled,reversed" />
                 </header>
                 <sheet>
@@ -43,6 +43,7 @@
                             <field name="currency_id" readonly="1" />
                             <field name="approval_config_id" readonly="1" invisible="not approval_config_id" />
                             <field name="current_approval_line_id" readonly="1" invisible="state in ('draft', 'approved', 'rejected', 'cancelled')" />
+                            <field name="current_user_can_approve" invisible="1" />
                         </group>
                     </group>
                     <group string="Source">

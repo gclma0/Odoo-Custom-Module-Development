@@ -57,6 +57,7 @@ class FundTransfer(models.Model):
     approval_comment = fields.Text(help="Optional comment used for the next approval or rejection action.")
     source_name = fields.Char(compute="_compute_display_names")
     destination_name = fields.Char(compute="_compute_display_names")
+    current_user_can_approve = fields.Boolean(compute="_compute_current_user_can_approve")
 
     @api.depends(
         "source_project_id",
@@ -84,6 +85,23 @@ class FundTransfer(models.Model):
             record.destination_name = (
                 record.destination_project_id.display_name or record.destination_expense_head_id.display_name or False
             )
+
+    @api.depends("state", "current_approval_line_id")
+    def _compute_current_user_can_approve(self):
+        pending_states = ("submitted", "gm_approval", "finance_approval", "md_approval")
+        for record in self:
+            if record.state not in pending_states or not record.current_approval_line_id:
+                record.current_user_can_approve = False
+                continue
+            line = record.sudo().current_approval_line_id
+            allowed = False
+            if line.approver_user_id and line.approver_user_id.id == self.env.user.id:
+                allowed = True
+            if line.approver_group_id and self.env.user.id in line.approver_group_id.users.ids:
+                allowed = True
+            if record.requested_by == self.env.user and not self.env.user.has_group("nn_fund_management.group_fund_administrator"):
+                allowed = False
+            record.current_user_can_approve = allowed
 
     @api.model_create_multi
     def create(self, vals_list):

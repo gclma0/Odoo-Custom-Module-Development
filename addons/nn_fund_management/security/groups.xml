@@ -14,25 +14,21 @@
     <record id="group_finance_user" model="res.groups">
         <field name="name">Finance User</field>
         <field name="category_id" ref="nn_fund_management.module_category_nn_fund_management" />
-        <field name="implied_ids" eval="[(4, ref('nn_fund_management.group_fund_user'))]" />
     </record>
 
     <record id="group_gm_approver" model="res.groups">
         <field name="name">GM Approver</field>
         <field name="category_id" ref="nn_fund_management.module_category_nn_fund_management" />
-        <field name="implied_ids" eval="[(4, ref('nn_fund_management.group_fund_user'))]" />
     </record>
 
     <record id="group_md_approver" model="res.groups">
         <field name="name">MD Approver</field>
         <field name="category_id" ref="nn_fund_management.module_category_nn_fund_management" />
-        <field name="implied_ids" eval="[(4, ref('nn_fund_management.group_fund_user'))]" />
     </record>
 
     <record id="group_fund_administrator" model="res.groups">
         <field name="name">Fund Administrator</field>
         <field name="category_id" ref="nn_fund_management.module_category_nn_fund_management" />
-        <field name="implied_ids" eval="[(4, ref('nn_fund_management.group_finance_user'))]" />
         <field name="users" eval="[(4, ref('base.user_admin'))]" />
     </record>
 </odoo>
