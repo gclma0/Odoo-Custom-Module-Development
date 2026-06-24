@@ -16,6 +16,9 @@ The module covers the main fund management lifecycle requested in the technical 
 - approval and audit history
 - company-based access control
 - computed balance tracking
+- dashboard and summary reporting
+- activity notifications
+- bank email import prototype
 
 Current Odoo version:
 - `Odoo 17 Community`
@@ -142,8 +145,10 @@ Manual functional test flow:
 
 ## Known Limitations
 
-- dashboard and notifications are not implemented
-- bank email integration is not implemented
+- the dashboard is functional but still implemented as a simple Odoo form-based summary page
+- the bank email import is a prototype using pasted email content rather than a live mailbox connection
+- notification support is implemented with basic Odoo activities rather than a custom notification center
 - approval workflow model supports an optional `Finance` level even though the minimum required chain is `GM -> MD`
+- project and expense category rule support is implemented with lightweight custom category fields instead of a larger category taxonomy engine
 - some reversal flows are intentionally conservative to preserve balance integrity
 - audit history is implemented through a generalized custom audit model rather than a full accounting journal structure

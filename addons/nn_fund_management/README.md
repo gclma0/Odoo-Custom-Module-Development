@@ -20,6 +20,10 @@ The design goal is to prevent double spending while keeping balance fields deriv
 - transfer workflow between projects and expense heads
 - company-based record rules and server-side access checks
 - demo seed records for walkthrough preparation
+- dashboard summaries
+- activity notifications
+- bank email import prototype
+- approval rule filters by project / expense category style fields
 
 ## Models
 
@@ -73,8 +77,8 @@ Security implementation includes:
 
 ## Future Improvements
 
-- dashboard and notifications
-- bank email integration prototype
 - broader record-rule filtering for assigned approvers only
 - richer reversal workflow and accounting-style audit trails
 - optional integration with Odoo vendor bills
+- real mailbox polling for bank email processing
+- a more polished dashboard frontend experience
